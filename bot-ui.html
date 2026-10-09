@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AuraNode - Bot UI Designer</title>
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: #111827;
+      --border: #1f2937;
+      --accent: #38bdf8;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --btn-green: #16a34a;
+      --btn-blue: #0284c7;
+      --btn-red: #dc2626;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding: 20px 14px; display: flex; justify-content: center; }
+    .container { width: 100%; max-width: 600px; display: flex; flex-direction: column; gap: 16px; }
+    
+    /* Top Navbar */
+    .nav { display: flex; gap: 10px; background: var(--card-bg); padding: 8px; border-radius: 10px; border: 1px solid var(--border); }
+    .nav a { flex: 1; text-align: center; text-decoration: none; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 8px; color: var(--text-muted); }
+    .nav a.active { background: #0284c7; color: #fff; }
+
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 18px; }
+    .card-title { font-size: 16px; font-weight: 600; color: var(--accent); margin-bottom: 12px; }
+    label { display: block; font-size: 13px; color: var(--text-muted); margin: 10px 0 4px; }
+    input, textarea {
+      width: 100%; padding: 11px; background: #070b14; border: 1px solid var(--border);
+      border-radius: 8px; color: #fff; font-size: 14px;
+    }
+    input:focus, textarea:focus { border-color: var(--accent); outline: none; }
+    button {
+      width: 100%; padding: 12px; background: #0284c7; color: white; border: none;
+      border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 14px;
+    }
+    button:hover { background: #0369a1; }
+    
+    /* Live Preview Telegram Mobile UI Mockup */
+    .preview-box { background: #17212b; border-radius: 12px; padding: 16px; border: 1px solid #242f3d; }
+    .tg-msg { background: #182533; border-radius: 10px; padding: 12px; font-size: 13px; line-height: 1.5; border-left: 3px solid #5288c1; margin-bottom: 12px; }
+    .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+    .mock-btn { background: var(--btn-blue); color: #fff; padding: 10px; border-radius: 8px; text-align: center; font-size: 13px; font-weight: 600; }
+    .mock-btn.green { background: var(--btn-green); }
+    .mock-btn.red { background: var(--btn-red); }
+    .status-msg { font-size: 13px; text-align: center; margin-top: 8px; min-height: 18px; color: #4ade80; }
+  </style>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+    import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCNhEQkvKdqk3SK-Ot7boIbJl-44b9QJyc",
+      authDomain: "auranode-58027.firebaseapp.com",
+      projectId: "auranode-58027",
+      storageBucket: "auranode-58027.firebasestorage.app",
+      messagingSenderId: "846497828511",
+      appId: "1:846497828511:web:da471062e730cde107dcaa"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // UI সেটিংস লোড করা
+    onSnapshot(doc(db, "bot_ui", "settings"), (docSnap) => {
+      if (docSnap.exists()) {
+        const d = docSnap.data();
+        if (d.shop_title) document.getElementById("shopTitle").value = d.shop_title;
+        if (d.support_user) document.getElementById("supportUser").value = d.support_user;
+        if (d.emoji_id) document.getElementById("emojiId").value = d.emoji_id;
+        if (d.welcome_text) document.getElementById("welcomeText").value = d.welcome_text;
+        updatePreview();
+      }
+    });
+
+    window.saveBotUi = async function() {
+      const shop_title = document.getElementById("shopTitle").value.trim();
+      const support_user = document.getElementById("supportUser").value.trim();
+      const emoji_id = document.getElementById("emojiId").value.trim();
+      const welcome_text = document.getElementById("welcomeText").value.trim();
+      const status = document.getElementById("statusMsg");
+
+      status.innerText = "সংরক্ষণ হচ্ছে...";
+      try {
+        await setDoc(doc(db, "bot_ui", "settings"), {
+          shop_title, support_user, emoji_id, welcome_text, updatedAt: new Date()
+        }, { merge: true });
+        status.innerText = "বট UI কনফিগ ক্লাউডে আপডেট হয়েছে!";
+      } catch (e) {
+        status.innerText = "সমস্যা: " + e.message;
+      }
+    };
+
+    window.updatePreview = function() {
+      const title = document.getElementById("shopTitle").value || "AuraNode Store";
+      document.getElementById("prevTitle").innerText = title;
+    };
+  </script>
+</head>
+<body>
+
+<div class="container">
+  <!-- Navbar -->
+  <div class="nav">
+    <a href="index.html">📦 ইনভেন্টরি ও অর্ডার</a>
+    <a href="bot-ui.html" class="active">🎨 বটের UI ও বাটন</a>
+  </div>
+
+  <!-- লাইভ প্রিভিউ -->
+  <div class="card">
+    <div class="card-title">📱 বটের লাইভ প্রিভিউ (Telegram UI)</div>
+    <div class="preview-box">
+      <div class="tg-msg">
+        👋 <b>Welcome!</b><br>
+        ⚡ <span id="prevTitle" style="color:#38bdf8;">AuraNode Store</span>-এ স্বাগতম!<br>
+        এখানে প্রিমিয়াম VPN এবং প্রক্সি পেয়ে যাবেন ইনস্ট্যান্ট ডেলিভারিতে।
+      </div>
+      <!-- বটের বাটন লেআউট -->
+      <div class="mock-btn green" style="margin-bottom:8px;">🎉 Buy Product</div>
+      <div class="btn-row">
+        <div class="mock-btn">👤 My Profile</div>
+        <div class="mock-btn">💳 Deposit</div>
+      </div>
+      <div class="btn-row">
+        <div class="mock-btn green">🛡️ Get Code</div>
+        <div class="mock-btn">🎧 Support</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- কাস্টমাইজেশন ফর্ম -->
+  <div class="card">
+    <div class="card-title">⚙️ বটের টেক্সট ও কাস্টম Emoji কনফিগ</div>
+
+    <label>শপের নাম / Bot Brand Name:</label>
+    <input type="text" id="shopTitle" value="Your Proxy & VPN" oninput="updatePreview()">
+
+    <label>টেলিগ্রাম প্রিমিয়াম Custom Emoji ID (যদি থাকে):</label>
+    <input type="text" id="emojiId" placeholder="উদাহরণ: 5368324170671202286">
+
+    <label>সাপোর্ট ইউজারনেম (বিনা @ চিহ্নে):</label>
+    <input type="text" id="supportUser" placeholder="siamsikder">
+
+    <label>বটের স্বাগতম মেসেজ (HTML ফরম্যাট):</label>
+    <textarea id="welcomeText" rows="3" placeholder="স্বাগতম আমাদের শপে! নিচে ক্লিক করে প্রোডাক্ট পছন্দ করুন।"></textarea>
+
+    <button onclick="saveBotUi()">বটের UI সেভ ও লাইভ আপডেট করুন</button>
+    <div id="statusMsg" class="status-msg"></div>
+  </div>
+</div>
+
+</body>
+</html>
