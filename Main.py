@@ -9,6 +9,7 @@ from firebase_admin import credentials, firestore
 
 app = FastAPI()
 
+# Firebase ইনিশিয়ালাইজেশন
 if not firebase_admin._apps:
     firebase_json_env = os.getenv("FIREBASE_KEY_JSON")
     if firebase_json_env:
@@ -66,25 +67,48 @@ async def send_tg_api(method: str, payload: dict):
     async with httpx.AsyncClient() as client:
         await client.post(url, json=payload)
 
-# Firebase থেকে ড্যাশবোর্ডে সেট করা লাইভ বাটন লোড
+# ড্যাশবোর্ডের সেভ করা ড্র্যাগ-অ্যান্ড-ড্রপ পজিশন ও সাইজ হুবহু কিবোর্ডে রূপান্তর
 def get_dynamic_keyboard():
     ui_doc = db.collection("bot_ui").document("settings").get()
     ui = ui_doc.to_dict() if ui_doc.exists else {}
+    buttons = ui.get("buttons", [])
 
-    btn_buy = ui.get("btn_buy", "🎉 Buy Product")
-    btn_prof = ui.get("btn_profile", "👤 My Profile")
-    btn_dep = ui.get("btn_deposit", "💳 Deposit")
-    btn_code = ui.get("btn_code", "🛡️ Get Code")
-    btn_sup = ui.get("btn_support", "🎧 Support")
+    if not buttons:
+        # ফলব্যাক ডিফল্ট বাটন
+        return {
+            "keyboard": [
+                [{"text": "🟢 Buy Product"}],
+                [{"text": "👤 My Profile"}, {"text": "💳 Deposit"}],
+                [{"text": "🛡️ Get Code"}, {"text": "🎧 Support"}]
+            ],
+            "resize_keyboard": True
+        }, ui
 
-    return {
-        "keyboard": [
-            [{"text": btn_buy}],
-            [{"text": btn_prof}, {"text": btn_dep}],
-            [{"text": btn_code}, {"text": btn_sup}]
-        ],
-        "resize_keyboard": True
-    }, ui
+    keyboard_grid = []
+    temp_row = []
+
+    # ড্যাশবোর্ডে যেভাবে বাটন সাজানো হয়েছে ঠিক সেই অর্ডারে রো/কলাম তৈরি
+    for btn in buttons:
+        dot = btn.get("dot", "🟢")
+        lbl = btn.get("label", "Button")
+        btn_text = f"{dot} {lbl}".strip()
+        width = btn.get("width", "half")
+
+        if width == "full":
+            if temp_row:
+                keyboard_grid.append(temp_row)
+                temp_row = []
+            keyboard_grid.append([{"text": btn_text}])
+        else:
+            temp_row.append({"text": btn_text})
+            if len(temp_row) == 2:
+                keyboard_grid.append(temp_row)
+                temp_row = []
+
+    if temp_row:
+        keyboard_grid.append(temp_row)
+
+    return {"keyboard": keyboard_grid, "resize_keyboard": True}, ui
 
 def get_user_profile(user_id: int, user_info: dict):
     u_ref = db.collection("users").document(str(user_id))
@@ -117,18 +141,26 @@ async def telegram_webhook(request: Request):
         profile = get_user_profile(user.get("id"), user)
         kb, ui_settings = get_dynamic_keyboard()
 
-        # ডায়নামিক বাটন ম্যাচিং
-        b_buy = ui_settings.get("btn_buy", "🎉 Buy Product")
-        b_prof = ui_settings.get("btn_profile", "👤 My Profile")
-        b_dep = ui_settings.get("btn_deposit", "💳 Deposit")
-        b_sup = ui_settings.get("btn_support", "🎧 Support")
+        # ড্যাশবোর্ডের বাটন আইডি মেলানো (টেক্সট যাই হোক আইডি ধরে অ্যাকশন রান করবে)
+        matched_btn_id = None
+        for b in ui_settings.get("buttons", []):
+            dot = b.get("dot", "🟢")
+            lbl = b.get("label", "")
+            full_label = f"{dot} {lbl}".strip()
+            if text == full_label or text == lbl:
+                matched_btn_id = b.get("id")
+                break
 
         if text == "/start":
             shop_title = ui_settings.get("shop_name", "AuraNode Store")
-            welcome_header = ui_settings.get("welcome_text", "স্বাগতম আমাদের শপে!")
+            welcome_header = ui_settings.get("welcome_text", "স্বাগতম আমাদের স্টোরে!")
             emoji_id = ui_settings.get("custom_emoji_id")
 
-            brand_display = f'<tg-emoji emoji_id="{emoji_id}">⚡</tg-emoji> <b>{shop_title}</b>' if emoji_id else f'⚡ <b>{shop_title}</b>'
+            # প্রিমিয়াম কাস্টম ইমোজি ট্যাগ
+            if emoji_id:
+                brand_display = f'<tg-emoji emoji_id="{emoji_id}">⚡</tg-emoji> <b>{shop_title}</b>'
+            else:
+                brand_display = f'⚡ <b>{shop_title}</b>'
 
             welcome_msg = (
                 f"👋 <b>Welcome, {user.get('first_name', 'Customer')}!</b>\n\n"
@@ -144,7 +176,8 @@ async def telegram_webhook(request: Request):
                 "reply_markup": kb
             })
 
-        elif text in [b_buy, "/buy"]:
+        # বাটন অ্যাকশন হ্যান্ডলার (আইডি বা টেক্সট উভয়ই সাপোর্ট করবে)
+        elif matched_btn_id == "buy" or "Buy" in text or text == "/buy":
             cat_keyboard = {
                 "inline_keyboard": [
                     [{"text": "🛡️ VPN", "callback_data": "cat_vpn"}, {"text": "🌐 Proxy", "callback_data": "cat_proxy"}],
@@ -159,7 +192,7 @@ async def telegram_webhook(request: Request):
                 "reply_markup": cat_keyboard
             })
 
-        elif text == b_prof:
+        elif matched_btn_id == "profile" or "Profile" in text:
             prof_text = (
                 f"👤 <b>User Profile</b>\n\n"
                 f"🆔 <b>User ID:</b> <code>{user.get('id')}</code>\n"
@@ -169,12 +202,25 @@ async def telegram_webhook(request: Request):
             )
             await send_tg_api("sendMessage", {"chat_id": chat_id, "text": prof_text, "parse_mode": "HTML"})
 
-        elif text == b_dep:
+        elif matched_btn_id == "deposit" or "Deposit" in text:
             dep_text = "💳 <b>Deposit System</b>\n\nSend bKash/Nagad: <code>017XXXXXXXX</code>\nএরপর অ্যাডমিনকে ট্রানজেকশন আইডি পাঠান।"
             await send_tg_api("sendMessage", {"chat_id": chat_id, "text": dep_text, "parse_mode": "HTML"})
 
-        elif text == b_sup:
+        elif matched_btn_id == "support" or "Support" in text:
             await send_tg_api("sendMessage", {"chat_id": chat_id, "text": "🎧 <b>Support:</b> @siamsikder", "parse_mode": "HTML"})
+
+        elif matched_btn_id == "code" or "Code" in text or text == "/stock":
+            stock_doc = db.collection("inventory").document("stock").get()
+            s_data = stock_doc.to_dict() if stock_doc.exists else {}
+            vpn_cnt = len(s_data.get("vpn", []))
+            proxy_cnt = len(s_data.get("proxy", []))
+            stock_msg = (
+                "📊 <b>লাইভ ইনভেন্টরি স্টক</b>\n"
+                "━━━━━━━━━━━━━━━━━━━━\n"
+                f"🛡️ VPN: <code>{vpn_cnt}</code> টি\n"
+                f"🌐 Proxy: <code>{proxy_cnt}</code> টি"
+            )
+            await send_tg_api("sendMessage", {"chat_id": chat_id, "text": stock_msg, "parse_mode": "HTML"})
 
     elif "callback_query" in update:
         cq = update["callback_query"]
@@ -223,6 +269,7 @@ async def telegram_webhook(request: Request):
             cat_keyboard = {
                 "inline_keyboard": [
                     [{"text": "🛡️ VPN", "callback_data": "cat_vpn"}, {"text": "🌐 Proxy", "callback_data": "cat_proxy"}],
+                    [{"text": "✉️ Mail", "callback_data": "cat_mail"}],
                     [{"text": "❌ Cancel", "callback_data": "action_cancel"}]
                 ]
             }
@@ -235,7 +282,12 @@ async def telegram_webhook(request: Request):
             })
 
         elif data == "action_cancel":
-            await send_tg_api("editMessageText", {"chat_id": chat_id, "message_id": msg_id, "text": "❌ <b>Cancelled.</b>", "parse_mode": "HTML"})
+            await send_tg_api("editMessageText", {
+                "chat_id": chat_id,
+                "message_id": msg_id,
+                "text": "❌ <b>Cancelled.</b>",
+                "parse_mode": "HTML"
+            })
 
         elif data.startswith("prod_"):
             p_key = data.replace("prod_", "")
