@@ -51,14 +51,14 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
     import { getFirestore, doc, setDoc, onSnapshot, collection, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 
-    // আপনার Firebase কনসোল থেকে প্রাপ্ত কনফিগ বসান
+    // আপনার দেওয়া আসল Firebase কনফিগারেশন
     const firebaseConfig = {
-      apiKey: "AIzaSyDummyKey",
-      authDomain: "your-project.firebaseapp.com",
-      projectId: "your-project",
-      storageBucket: "your-project.appspot.com",
-      messagingSenderId: "123456789",
-      appId: "1:123456789:web:dummy"
+      apiKey: "AIzaSyBYDMMAgFNHRsu7WvYI7vhYuBwoYfc8AyE",
+      authDomain: "clip-well.firebaseapp.com",
+      projectId: "clip-well",
+      storageBucket: "clip-well.firebasestorage.app",
+      messagingSenderId: "203426313347",
+      appId: "1:203426313347:android:2c4c2b08bf31a2b31b57b6"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -76,12 +76,12 @@
       } else {
         badge.className = "badge badge-off";
         badge.innerText = "Offline";
-        botStatusText.innerText = "কোনো সক্রিয় বট টোকেন নেই।";
+        botStatusText.innerText = "কোনো সক্রিয় বট টোকেন পাওয়া যায়নি।";
         botStatusText.style.color = "var(--danger)";
       }
     });
 
-    // ২. স্টক কাউন্টার ট্র্যাক
+    // ২. স্টক ট্র্যাক
     onSnapshot(doc(db, "inventory", "stock"), (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data();
@@ -90,7 +90,7 @@
       }
     });
 
-    // ৩. কাস্টমারদের অর্ডার ট্র্যাক
+    // ৩. কাস্টমার অর্ডার লাইভ আপডেট
     const q = query(collection(db, "orders"), orderBy("timestamp", "desc"), limit(10));
     onSnapshot(q, (snapshot) => {
       const tbody = document.getElementById("ordersTableBody");
@@ -112,7 +112,7 @@
       });
     });
 
-    // বট টোকেন সেভ ফাংশন
+    // বট টোকেন সেভ
     window.saveBotToken = async function() {
       const token = document.getElementById("botToken").value.trim();
       const statusText = document.getElementById("botStatusText");
@@ -128,7 +128,7 @@
       }
     };
 
-    // স্টক যোগ করার ফাংশন
+    // স্টক যুক্ত করা
     window.saveStock = async function() {
       const cat = document.getElementById("stockCat").value;
       const rawText = document.getElementById("stockData").value.trim();
@@ -140,7 +140,7 @@
 
       try {
         await setDoc(doc(db, "inventory", "stock"), { [cat]: newItems }, { merge: true });
-        statusText.innerText = `${newItems.length}টি আইটেম স্টকে যোগ করা হয়েছে!`;
+        statusText.innerText = `${newItems.length}টি আইটেম স্টকে যুক্ত হয়েছে!`;
         document.getElementById("stockData").value = "";
       } catch (e) {
         statusText.innerText = "সমস্যা: " + e.message;
@@ -153,7 +153,7 @@
 <div class="container">
   <div class="header">
     <h1>⚡ AuraNode Bot Console</h1>
-    <p>অ্যাডমিন প্যানেল ও লাইভ কাস্টমার ডেলিভারি ট্র্যাকার</p>
+    <p>Firebase ক্লাউড সিঙ্ক ও অটোমেটেড টেলিগ্রাম শপ</p>
   </div>
 
   <!-- ১. বট ম্যানেজার -->
@@ -162,8 +162,8 @@
       <span>টেলিগ্রাম বট ম্যানেজার</span>
       <span id="botStatusBadge" class="badge badge-off">Offline</span>
     </div>
-    <label>Bot Token:</label>
-    <input type="text" id="botToken" placeholder="BotFather থেকে নেওয়া টোকেন বসান">
+    <label>Bot Token (BotFather থেকে পাওয়া):</label>
+    <input type="text" id="botToken" placeholder="123456:ABC-DEF1234ghIkl...">
     <button onclick="saveBotToken()">টোকেন সেভ ও চালু করুন</button>
     <div id="botStatusText" class="status-text"></div>
   </div>
@@ -189,12 +189,12 @@
     </select>
 
     <label>ডাটা লিস্ট (প্রতি লাইনে একটি করে):</label>
-    <textarea id="stockData" rows="3" placeholder="key-sample-1&#10;key-sample-2"></textarea>
+    <textarea id="stockData" rows="3" placeholder="vpn-key-1&#10;vpn-key-2"></textarea>
     <button onclick="saveStock()">স্টকে সেভ করুন</button>
     <div id="stockStatusText" class="status-text"></div>
   </div>
 
-  <!-- ৩. কাস্টমার ও অর্ডার লিস্ট -->
+  <!-- ৩. কাস্টমার ও ডেলিভারি লিস্ট -->
   <div class="card">
     <div class="card-title">👥 সাম্প্রতিক কাস্টমার ও ডেলিভারি লিস্ট</div>
     <div style="overflow-x: auto;">
