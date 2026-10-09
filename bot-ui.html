@@ -3,14 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>AuraNode - Live Bot UI & Button Customizer</title>
+  <title>AuraNode - Telegram Native Bot Designer</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
-  <!-- ড্র্যাগ অ্যান্ড ড্রপের জন্য SortableJS -->
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
   <style>
@@ -22,7 +21,6 @@
       --text-muted: #64748b;
       --primary: #2563eb;
       --success: #16a34a;
-      --danger: #dc2626;
       --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
       --shadow-md: 0 6px 20px -2px rgba(15, 23, 42, 0.08);
     }
@@ -39,29 +37,32 @@
     .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 18px; padding: 20px; box-shadow: var(--shadow-md); }
     .card-title { font-size: 16px; font-weight: 700; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
 
-    /* টেলিগ্রাম মোবাইল লাইভ মকআপ */
-    .tg-mockup { background: #17212b; border-radius: 18px; padding: 16px; border: 1px solid #242f3d; color: #fff; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+    /* টেলিগ্রাম মোবাইল প্রিভিউ */
+    .tg-mockup { background: #17212b; border-radius: 18px; padding: 16px; border: 1px solid #242f3d; color: #fff; }
     .tg-msg { background: #182533; border-radius: 12px; padding: 14px; font-size: 13px; line-height: 1.5; border-left: 3px solid #5288c1; margin-bottom: 16px; }
     
-    /* প্রিভিউ বাটন কনটেইনার */
     .tg-keyboard-preview { display: flex; flex-wrap: wrap; gap: 8px; }
     .preview-btn {
       padding: 12px 10px; border-radius: 10px; text-align: center; font-size: 13px; font-weight: 700;
-      color: #fff; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px;
+      color: #fff; display: flex; align-items: center; justify-content: center; gap: 6px;
     }
     .preview-btn.full { width: 100%; }
     .preview-btn.half { width: calc(50% - 4px); }
 
-    /* বাটন এডিটর লিস্ট (ড্র্যাগ-অ্যান্ড-ড্রপ) */
+    /* বাটন কালার প্রিসেট (টেলিগ্রামের স্টাইল) */
+    .color-green { background: #238636; }
+    .color-blue { background: #2f80ed; }
+    .color-default { background: #242f3d; }
+    .color-red { background: #cf222e; }
+
+    /* ড্র্যাগ অ্যান্ড ড্রপ বাটন লিস্ট */
     .btn-edit-list { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
     .btn-edit-card {
       background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; padding: 14px;
-      cursor: grab; display: flex; flex-direction: column; gap: 10px; position: relative;
+      display: flex; flex-direction: column; gap: 10px;
     }
-    .btn-edit-card:active { cursor: grabbing; border-color: var(--primary); }
-    
-    .drag-handle { display: flex; align-items: center; justify-content: space-between; font-size: 12px; font-weight: 700; color: var(--text-muted); }
-    .drag-handle i { font-size: 14px; }
+    .drag-header { display: flex; align-items: center; justify-content: space-between; font-size: 12px; font-weight: 700; color: var(--text-muted); cursor: grab; }
+    .drag-header:active { cursor: grabbing; }
 
     .input-row { display: flex; gap: 8px; }
     input, select, textarea {
@@ -71,8 +72,6 @@
     input:focus, select:focus { border-color: var(--primary); }
 
     .btn-controls { display: flex; align-items: center; gap: 8px; }
-    .color-picker { width: 40px; height: 38px; padding: 2px; border-radius: 8px; cursor: pointer; border: 1px solid var(--border); }
-    
     .btn-width-toggle {
       flex: 1; padding: 8px; border: 1px solid var(--border); background: #fff; border-radius: 8px;
       font-size: 12px; font-weight: 700; cursor: pointer; text-align: center; color: var(--text-muted);
@@ -104,22 +103,22 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // ডিফল্ট বাটন কনফিগারেশন
+    // টেলিগ্রামের অফিসিয়াল কালার বাটন প্রিসেট
     let buttonsData = [
-      { id: "buy", label: "🎉 Buy Product", width: "full", color: "#16a34a", emoji_id: "" },
-      { id: "profile", label: "👤 My Profile", width: "half", color: "#2563eb", emoji_id: "" },
-      { id: "deposit", label: "💳 Deposit", width: "half", color: "#2563eb", emoji_id: "" },
-      { id: "code", label: "🛡️ Get Code", width: "half", color: "#16a34a", emoji_id: "" },
-      { id: "support", label: "🎧 Support", width: "half", color: "#2563eb", emoji_id: "" }
+      { id: "buy", label: "Buy Product", color_theme: "color-green", dot: "🟢", width: "full", emoji_id: "" },
+      { id: "profile", label: "My Profile", color_theme: "color-blue", dot: "👤", width: "half", emoji_id: "" },
+      { id: "deposit", label: "Deposit", color_theme: "color-blue", dot: "💳", width: "half", emoji_id: "" },
+      { id: "code", label: "Get Code", color_theme: "color-green", dot: "🛡️", width: "half", emoji_id: "" },
+      { id: "support", label: "Support", color_theme: "color-default", dot: "🎧", width: "half", emoji_id: "" }
     ];
 
-    // রিয়েলটাইম ডাটাবেস থেকে লোড
     onSnapshot(doc(db, "bot_ui", "settings"), (docSnap) => {
       if (docSnap.exists()) {
         const d = docSnap.data();
         if (d.shop_name) document.getElementById("shopName").value = d.shop_name;
         if (d.welcome_text) document.getElementById("welcomeText").value = d.welcome_text;
-        if (d.buttons && Array.isArray(d.buttons)) {
+        if (d.custom_emoji_id) document.getElementById("shopEmojiId").value = d.custom_emoji_id;
+        if (d.buttons && Array.isArray(d.buttons) && d.buttons.length > 0) {
           buttonsData = d.buttons;
         }
       }
@@ -127,7 +126,6 @@
       renderLivePreview();
     });
 
-    // বাটন এডিটর ড্র্যাগ-অ্যান্ড-ড্রপ রেন্ডার
     function renderEditor() {
       const container = document.getElementById("btnList");
       container.innerHTML = "";
@@ -138,26 +136,31 @@
         card.dataset.index = index;
 
         card.innerHTML = `
-          <div class="drag-handle">
-            <span><i class="fa-solid fa-grip-vertical"></i> বাটন #${index + 1} (চাপ দিয়ে ধরে পজিশন বদলান)</span>
+          <div class="drag-header">
+            <span><i class="fa-solid fa-bars"></i> বাটন #${index + 1}: ${btn.id.toUpperCase()}</span>
+            <span style="font-size:11px; color:#2563eb;">চাপ দিয়ে টেনে পজিশন বদলান</span>
           </div>
           <div class="input-row">
-            <input type="text" value="${btn.label}" placeholder="বাটন নাম" oninput="updateLabel(${index}, this.value)">
-            <input type="text" value="${btn.emoji_id || ''}" placeholder="Emoji ID" style="max-width: 120px;" oninput="updateEmoji(${index}, this.value)">
+            <input type="text" value="${btn.label}" placeholder="বাটনের লেখা" oninput="updateLabel(${index}, this.value)">
+            <input type="text" value="${btn.emoji_id || ''}" placeholder="Telegram Emoji ID" style="max-width: 140px;" oninput="updateEmoji(${index}, this.value)">
           </div>
           <div class="btn-controls">
-            <input type="color" class="color-picker" value="${btn.color || '#2563eb'}" onchange="updateColor(${index}, this.value)">
-            <button class="btn-width-toggle ${btn.width === 'full' ? 'active' : ''}" onclick="toggleWidth(${index}, 'full')">ফুল স্ক্রিন (১০০%)</button>
+            <select onchange="updateTheme(${index}, this.value)" style="flex:1;">
+              <option value="color-green" ${btn.color_theme === 'color-green' ? 'selected' : ''}>🟢 সবুজ বাটন (Green)</option>
+              <option value="color-blue" ${btn.color_theme === 'color-blue' ? 'selected' : ''}>🔵 নীল বাটন (Blue)</option>
+              <option value="color-red" ${btn.color_theme === 'color-red' ? 'selected' : ''}>🔴 লাল বাটন (Red)</option>
+              <option value="color-default" ${btn.color_theme === 'color-default' ? 'selected' : ''}>⚫ টেলিগ্রাম ডার্ক (Default)</option>
+            </select>
+            <button class="btn-width-toggle ${btn.width === 'full' ? 'active' : ''}" onclick="toggleWidth(${index}, 'full')">ফুল রো (১০০%)</button>
             <button class="btn-width-toggle ${btn.width === 'half' ? 'active' : ''}" onclick="toggleWidth(${index}, 'half')">অর্ধেক (৫০%)</button>
           </div>
         `;
         container.appendChild(card);
       });
 
-      // Sortable ইনিশিয়ালাইজেশন
       new Sortable(container, {
-        animation: 150,
-        handle: '.btn-edit-card',
+        animation: 200,
+        handle: '.drag-header',
         onEnd: function (evt) {
           const item = buttonsData.splice(evt.oldIndex, 1)[0];
           buttonsData.splice(evt.newIndex, 0, item);
@@ -167,31 +170,33 @@
       });
     }
 
-    // লাইভ প্রিভিউ রেন্ডার
     function renderLivePreview() {
       const pTitle = document.getElementById("shopName").value || "AuraNode Store";
+      const pWelcome = document.getElementById("welcomeText").value || "স্বাগতম আমাদের স্টোরে!";
       document.getElementById("prevShopName").innerText = pTitle;
+      document.getElementById("prevWelcome").innerText = pWelcome;
 
       const pContainer = document.getElementById("previewKeyboard");
       pContainer.innerHTML = "";
 
       buttonsData.forEach(btn => {
         const b = document.createElement("div");
-        b.className = `preview-btn ${btn.width}`;
-        b.style.backgroundColor = btn.color || "#2563eb";
-        b.innerHTML = `${btn.label}`;
+        b.className = `preview-btn ${btn.width} ${btn.color_theme}`;
+        b.innerHTML = `${btn.dot} ${btn.label}`;
         pContainer.appendChild(b);
       });
     }
 
-    // এডিট ইভেন্ট হ্যান্ডলার
     window.updateLabel = (i, val) => { buttonsData[i].label = val; renderLivePreview(); };
     window.updateEmoji = (i, val) => { buttonsData[i].emoji_id = val; renderLivePreview(); };
-    window.updateColor = (i, val) => { buttonsData[i].color = val; renderLivePreview(); };
+    window.updateTheme = (i, val) => { 
+      buttonsData[i].color_theme = val;
+      buttonsData[i].dot = val === 'color-green' ? '🟢' : val === 'color-blue' ? '🔵' : val === 'color-red' ? '🔴' : '⚫';
+      renderLivePreview(); 
+    };
     window.toggleWidth = (i, w) => { buttonsData[i].width = w; renderEditor(); renderLivePreview(); };
     window.onTextChange = () => renderLivePreview();
 
-    // Firebase-এ সেভ করা
     window.saveAllToFirebase = async function() {
       const status = document.getElementById("statusMsg");
       status.style.color = "var(--text-muted)";
@@ -200,6 +205,7 @@
       const payload = {
         shop_name: document.getElementById("shopName").value.trim(),
         welcome_text: document.getElementById("welcomeText").value.trim(),
+        custom_emoji_id: document.getElementById("shopEmojiId").value.trim(),
         buttons: buttonsData,
         updatedAt: new Date()
       };
@@ -207,9 +213,9 @@
       try {
         await setDoc(doc(db, "bot_ui", "settings"), payload, { merge: true });
         status.style.color = "var(--success)";
-        status.innerText = "সফলভাবে সেভ হয়েছে! বটে বাটন পজিশন ও কালার লাইভ হয়ে গেছে।";
+        status.innerText = "সফলভাবে সেভ হয়েছে! বটে পজিশন, কাস্টম ইমোজি এবং বাটন টেক্সট লাইভ হয়ে গেছে।";
       } catch (e) {
-        status.style.color = "var(--danger)";
+        status.style.color = "#dc2626";
         status.innerText = "ত্রুটি: " + e.message;
       }
     };
@@ -218,7 +224,6 @@
 <body>
 
 <div class="container">
-  <!-- Navbar -->
   <nav class="nav">
     <a href="index.html">📦 ইনভেন্টরি</a>
     <a href="bot-ui.html" class="active">🎨 বটের UI ও বাটন</a>
@@ -227,32 +232,34 @@
 
   <!-- লাইভ মকআপ -->
   <div class="card">
-    <div class="card-title">📱 লাইভ প্রিভিউ (উপরে দেখুন)</div>
+    <div class="card-title">📱 টেলিগ্রাম স্ক্রিন প্রিভিউ</div>
     <div class="tg-mockup">
       <div class="tg-msg">
         👋 <b>Welcome!</b><br>
         ⚡ <span id="prevShopName" style="color:#38bdf8;">AuraNode Store</span><br>
         <span id="prevWelcome">স্বাগতম আমাদের স্টোরে! নিচে ক্লিক করুন:</span>
       </div>
-      <!-- লাইভ বাটনসমূহ -->
       <div class="tg-keyboard-preview" id="previewKeyboard"></div>
     </div>
   </div>
 
-  <!-- সেটিংস ও বাটন ড্র্যাগ-অ্যান্ড-ড্রপ -->
+  <!-- সেটিংস ও ড্র্যাগ বাটন এডিটর -->
   <div class="card">
-    <div class="card-title">⚙️ বাটন সাজান ও কালার দিন</div>
+    <div class="card-title">⚙️ বাটন পজিশন ও ইমোজি এডিটর</div>
 
     <label style="font-size:12px; font-weight:700; color:var(--text-muted); margin-bottom:4px; display:block;">শপের নাম</label>
     <input type="text" id="shopName" value="Your Proxy & VPN" oninput="onTextChange()" style="margin-bottom:12px;">
 
-    <label style="font-size:12px; font-weight:700; color:var(--text-muted); margin-bottom:4px; display:block;">ওয়েলকাম মেসেজ</label>
+    <label style="font-size:12px; font-weight:700; color:var(--text-muted); margin-bottom:4px; display:block;">হেডারের কাস্টম Emoji ID (Telegram Premium)</label>
+    <input type="text" id="shopEmojiId" placeholder="যেমন: 5368324170671202286" oninput="onTextChange()" style="margin-bottom:12px;">
+
+    <label style="font-size:12px; font-weight:700; color:var(--text-muted); margin-bottom:4px; display:block;">স্বাগতম মেসেজ</label>
     <textarea id="welcomeText" rows="2" oninput="onTextChange()" style="margin-bottom:14px;">স্বাগতম আমাদের স্টোরে! নিচে ক্লিক করুন:</textarea>
 
-    <label style="font-size:12px; font-weight:700; color:var(--text-muted); margin-bottom:4px; display:block;">বাটন লিস্ট (ড্র্যাগ করে ওপরে-নিচে নিন)</label>
+    <label style="font-size:12px; font-weight:700; color:var(--text-muted); margin-bottom:4px; display:block;">বাটন লিস্ট (টেনে উপরে-নিচে পজিশন বদলান)</label>
     <div class="btn-edit-list" id="btnList"></div>
 
-    <button class="btn-save-all" onclick="saveAllToFirebase()">বটের লাইভ বাটন আপডেট করুন</button>
+    <button class="btn-save-all" onclick="saveAllToFirebase()">বটের লাইভ বাটন ও ইমোজি সেভ করুন</button>
     <div id="statusMsg" class="status-text"></div>
   </div>
 </div>
