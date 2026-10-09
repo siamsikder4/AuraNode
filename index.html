@@ -3,50 +3,293 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AuraNode - Cloud Bot & Inventory Manager</title>
+  <title>AuraNode Admin Console</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
   <style>
     :root {
-      --bg: #0b0f19;
-      --card-bg: #111827;
-      --border: #1f2937;
-      --accent: #38bdf8;
-      --text: #f3f4f6;
-      --text-muted: #9ca3af;
-      --success: #22c55e;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --border: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --success: #10b981;
+      --success-bg: #ecfdf5;
       --danger: #ef4444;
+      --danger-bg: #fef2f2;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+      --shadow-md: 0 4px 20px -2px rgba(15, 23, 42, 0.06);
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background: var(--bg); color: var(--text); padding: 20px 14px; display: flex; justify-content: center; }
-    .container { width: 100%; max-width: 600px; display: flex; flex-direction: column; gap: 16px; }
-    
-    /* Top Navbar */
-    .nav { display: flex; gap: 10px; background: var(--card-bg); padding: 8px; border-radius: 10px; border: 1px solid var(--border); }
-    .nav a { flex: 1; text-align: center; text-decoration: none; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 8px; color: var(--text-muted); }
-    .nav a.active { background: #0284c7; color: #fff; }
 
-    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
-    .card-title { font-size: 16px; font-weight: 600; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
-    label { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 6px; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      padding: 32px 16px;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 680px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Top Navigation */
+    .nav {
+      display: flex;
+      background: var(--card-bg);
+      padding: 6px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      gap: 8px;
+    }
+
+    .nav a {
+      flex: 1;
+      text-align: center;
+      text-decoration: none;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 10px;
+      color: var(--text-muted);
+      transition: all 0.2s ease;
+    }
+
+    .nav a.active {
+      background: var(--primary);
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+    }
+
+    .nav a:hover:not(.active) {
+      background: #f1f5f9;
+      color: var(--text-main);
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-top: 4px;
+      margin-bottom: 6px;
+    }
+
+    .header h1 {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #0f172a 0%, #2563eb 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .header p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      font-weight: 500;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: var(--shadow-md);
+      transition: border-color 0.2s ease;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Form Fields */
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
     input, select, textarea {
-      width: 100%; padding: 12px; background: #070b14; border: 1px solid var(--border);
-      border-radius: 8px; color: #fff; font-size: 14px; margin-bottom: 14px;
+      width: 100%;
+      padding: 13px 16px;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text-main);
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 16px;
+      outline: none;
+      transition: all 0.2s ease;
     }
-    input:focus, select:focus, textarea:focus { border-color: var(--accent); outline: none; }
+
+    input:focus, select:focus, textarea:focus {
+      background: #ffffff;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
     button {
-      width: 100%; padding: 12px; background: #0284c7; color: white; border: none;
-      border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.2s;
+      width: 100%;
+      padding: 13px;
+      background: linear-gradient(135deg, var(--primary) 0%, #1d4ed8 100%);
+      color: #ffffff;
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+      transition: all 0.2s ease;
     }
-    button:hover { background: #0369a1; }
-    .badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-    .badge-off { background: rgba(239, 68, 68, 0.15); color: var(--danger); border: 1px solid var(--danger); }
-    .badge-on { background: rgba(34, 197, 94, 0.15); color: var(--success); border: 1px solid var(--success); }
-    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
-    .stat-card { background: #070b14; border: 1px solid var(--border); border-radius: 8px; padding: 14px; text-align: center; }
-    .stat-number { font-size: 22px; font-weight: bold; color: var(--accent); margin-top: 4px; }
-    .status-text { font-size: 13px; text-align: center; margin-top: 10px; min-height: 18px; }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
-    th { padding: 8px; color: var(--text-muted); text-align: left; border-bottom: 1px solid var(--border); }
-    td { padding: 10px 8px; border-bottom: 1px solid #1f2937; }
+
+    button:hover {
+      box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
+      transform: translateY(-1px);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .badge-off {
+      background: var(--danger-bg);
+      color: var(--danger);
+      border: 1px solid #fecaca;
+    }
+
+    .badge-on {
+      background: var(--success-bg);
+      color: var(--success);
+      border: 1px solid #a7f3d0;
+    }
+
+    /* Inventory Stats */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .stat-card {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      text-align: center;
+      transition: all 0.2s ease;
+    }
+
+    .stat-card:hover {
+      background: #f1f5f9;
+    }
+
+    .stat-card label {
+      margin-bottom: 2px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-number {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-top: 4px;
+    }
+
+    .status-text {
+      font-size: 13px;
+      font-weight: 500;
+      text-align: center;
+      margin-top: 10px;
+      min-height: 18px;
+    }
+
+    /* Orders Table */
+    .table-container {
+      overflow-x: auto;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #ffffff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      text-align: left;
+    }
+
+    th {
+      padding: 12px 14px;
+      color: var(--text-muted);
+      font-weight: 600;
+      background: #f8fafc;
+      border-bottom: 1px solid var(--border);
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+    }
+
+    td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-main);
+      font-weight: 500;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    .credential-code {
+      font-family: monospace;
+      background: #f1f5f9;
+      color: #0f172a;
+      padding: 3px 6px;
+      border-radius: 6px;
+      font-size: 12px;
+      border: 1px solid #e2e8f0;
+    }
   </style>
 
   <script type="module">
@@ -65,22 +308,24 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
+    // ১. বট স্ট্যাটাস
     onSnapshot(doc(db, "bot_config", "main"), (docSnap) => {
       const badge = document.getElementById("botStatusBadge");
       const botStatusText = document.getElementById("botStatusText");
       if (docSnap.exists() && docSnap.data().token) {
         badge.className = "badge badge-on";
-        badge.innerText = "Active";
-        botStatusText.innerText = "বট সক্রিয় ও ক্লাউডে কানেক্টেড আছে!";
+        badge.innerHTML = "● Online";
+        botStatusText.innerText = "বট সক্রিয় রয়েছে এবং ক্লাউডে সংযুক্ত!";
         botStatusText.style.color = "var(--success)";
       } else {
         badge.className = "badge badge-off";
-        badge.innerText = "Offline";
-        botStatusText.innerText = "কোনো সক্রিয় বট টোকেন নেই।";
+        badge.innerHTML = "● Offline";
+        botStatusText.innerText = "কোনো সক্রিয় বট টোকেন পাওয়া যায়নি।";
         botStatusText.style.color = "var(--danger)";
       }
     });
 
+    // ২. লাইভ স্টক
     onSnapshot(doc(db, "inventory", "stock"), (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data();
@@ -89,54 +334,63 @@
       }
     });
 
+    // ৩. রিয়েলটাইম অর্ডার
     const q = query(collection(db, "orders"), orderBy("timestamp", "desc"), limit(10));
     onSnapshot(q, (snapshot) => {
       const tbody = document.getElementById("ordersTableBody");
       tbody.innerHTML = "";
       if (snapshot.empty) {
-        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color: var(--text-muted); padding: 15px;">এখনও কোনো কাস্টমার অর্ডার দেয়নি</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color: var(--text-muted); padding: 18px;">এখনও কোনো কাস্টমার অর্ডার দেয়নি</td></tr>`;
         return;
       }
       snapshot.forEach((doc) => {
         const order = doc.data();
         const tr = document.createElement("tr");
         tr.innerHTML = `
-          <td>${order.first_name || 'Anonymous'}</td>
-          <td style="color: #38bdf8;">@${order.username || 'N/A'}</td>
-          <td><b>${order.product}</b></td>
-          <td style="font-family: monospace; color: #22c55e;">${order.delivered_credential}</td>
+          <td><strong>${order.first_name || 'Anonymous'}</strong></td>
+          <td style="color: var(--primary);">@${order.username || 'N/A'}</td>
+          <td><span style="background:#e0e7ff; color:#3730a3; padding:2px 8px; border-radius:6px; font-weight:600; font-size:12px;">${order.product}</span></td>
+          <td><span class="credential-code">${order.delivered_credential}</span></td>
         `;
         tbody.appendChild(tr);
       });
     });
 
+    // বট টোকেন সেভ
     window.saveBotToken = async function() {
       const token = document.getElementById("botToken").value.trim();
       const statusText = document.getElementById("botStatusText");
-      if (!token) return alert("টোকেন ইনপুট দিন!");
-      statusText.innerText = "সেভ হচ্ছে...";
+      if (!token) return alert("দয়া করে একটি টোকেন ইনপুট দিন!");
+      statusText.innerText = "সংরক্ষণ করা হচ্ছে...";
+      statusText.style.color = "var(--text-muted)";
       try {
         await setDoc(doc(db, "bot_config", "main"), { token: token, updatedAt: new Date() }, { merge: true });
-        statusText.innerText = "টোকেন সফলভাবে ক্লাউডে সেভ হয়েছে!";
+        statusText.innerText = "টোকেন সফলভাবে সেভ হয়েছে!";
+        statusText.style.color = "var(--success)";
         document.getElementById("botToken").value = "";
       } catch (e) {
-        statusText.innerText = "সমস্যা: " + e.message;
+        statusText.innerText = "ত্রুটি: " + e.message;
+        statusText.style.color = "var(--danger)";
       }
     };
 
+    // স্টক যোগ করা
     window.saveStock = async function() {
       const cat = document.getElementById("stockCat").value;
       const rawText = document.getElementById("stockData").value.trim();
       const statusText = document.getElementById("stockStatusText");
-      if (!rawText) return alert("স্টক ডাটা দিন!");
+      if (!rawText) return alert("স্টক ডাটা টেক্সট দিন!");
       const newItems = rawText.split("\n").map(i => i.trim()).filter(i => i.length > 0);
-      statusText.innerText = "আপডেট হচ্ছে...";
+      statusText.innerText = "স্টক আপডেট করা হচ্ছে...";
+      statusText.style.color = "var(--text-muted)";
       try {
         await setDoc(doc(db, "inventory", "stock"), { [cat]: newItems }, { merge: true });
-        statusText.innerText = `${newItems.length}টি আইটেম স্টকে যুক্ত হয়েছে!`;
+        statusText.innerText = `${newItems.length}টি আইটেম সফলভাবে যোগ করা হয়েছে!`;
+        statusText.style.color = "var(--success)";
         document.getElementById("stockData").value = "";
       } catch (e) {
-        statusText.innerText = "সমস্যা: " + e.message;
+        statusText.innerText = "ত্রুটি: " + e.message;
+        statusText.style.color = "var(--danger)";
       }
     };
   </script>
@@ -144,25 +398,33 @@
 <body>
 
 <div class="container">
-  <!-- Navbar -->
+  <!-- Top Navigation -->
   <div class="nav">
     <a href="index.html" class="active">📦 ইনভেন্টরি ও অর্ডার</a>
     <a href="bot-ui.html">🎨 বটের UI ও বাটন</a>
   </div>
 
+  <!-- Header -->
+  <div class="header">
+    <h1>AuraNode Console</h1>
+    <p>স্মার্ট ইনভেন্টরি ও স্বয়ংক্রিয় ক্লাউড ডেলিভারি সিস্টেম</p>
+  </div>
+
+  <!-- 1. Bot Manager Card -->
   <div class="card">
     <div class="card-title">
       <span>টেলিগ্রাম বট ম্যানেজার</span>
-      <span id="botStatusBadge" class="badge badge-off">Offline</span>
+      <span id="botStatusBadge" class="badge badge-off">● Offline</span>
     </div>
-    <label>Bot Token:</label>
-    <input type="text" id="botToken" placeholder="BotFather থেকে পাওয়া টোকেন">
-    <button onclick="saveBotToken()">টোকেন সেভ ও চালু করুন</button>
+    <label>Bot Token</label>
+    <input type="text" id="botToken" placeholder="BotFather থেকে পাওয়া API Token দিন">
+    <button onclick="saveBotToken()">টোকেন সেভ ও বট কানেক্ট করুন</button>
     <div id="botStatusText" class="status-text"></div>
   </div>
 
+  <!-- 2. Inventory Stock Card -->
   <div class="card">
-    <div class="card-title">স্টক ম্যানেজমেন্ট</div>
+    <div class="card-title">স্টক ও ইনভেন্টরি ম্যানেজমেন্ট</div>
     <div class="stats-grid">
       <div class="stat-card">
         <label>VPN স্টক</label>
@@ -174,32 +436,33 @@
       </div>
     </div>
 
-    <label>ক্যাটাগরি:</label>
+    <label>ক্যাটাগরি নির্বাচন করুন</label>
     <select id="stockCat">
-      <option value="vpn">VPN Credentials</option>
-      <option value="proxy">Residential Proxy</option>
+      <option value="vpn">VPN Credentials (WireGuard/Configs)</option>
+      <option value="proxy">Residential Proxy (IP:Port:User:Pass)</option>
     </select>
 
-    <label>ডাটা লিস্ট (প্রতি লাইনে একটি করে):</label>
+    <label>স্টক ডাটা লিস্ট (প্রতি লাইনে একটি করে কী/প্রক্সি)</label>
     <textarea id="stockData" rows="3" placeholder="key-sample-1&#10;key-sample-2"></textarea>
-    <button onclick="saveStock()">স্টকে সেভ করুন</button>
+    <button onclick="saveStock()">ইনভেন্টরিতে স্টক যোগ করুন</button>
     <div id="stockStatusText" class="status-text"></div>
   </div>
 
+  <!-- 3. Orders Table Card -->
   <div class="card">
-    <div class="card-title">👥 সাম্প্রতিক কাস্টমার ও ডেলিভারি লিস্ট</div>
-    <div style="overflow-x: auto;">
+    <div class="card-title">👥 সাম্প্রতিক কাস্টমার ও ডেলিভারি লগ</div>
+    <div class="table-container">
       <table>
         <thead>
           <tr>
             <th>কাস্টমার</th>
             <th>ইউজারনেম</th>
             <th>প্রোডাক্ট</th>
-            <th>ডেলিভারি কী</th>
+            <th>ডেলিভারি ডাটা</th>
           </tr>
         </thead>
         <tbody id="ordersTableBody">
-          <tr><td colspan="4" style="text-align:center; color: var(--text-muted); padding: 15px;">ডাটা লোড হচ্ছে...</td></tr>
+          <tr><td colspan="4" style="text-align:center; color: var(--text-muted); padding: 18px;">ডাটা লোড হচ্ছে...</td></tr>
         </tbody>
       </table>
     </div>
