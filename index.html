@@ -1,110 +1,42 @@
-<!DOCTYPE html>
-<html lang="bn">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AuraNode Bot Manager</title>
-  <style>
-    body { font-family: Arial, sans-serif; background: #0f172a; color: white; padding: 20px; }
-    .box { max-width: 480px; margin: auto; background: #1e293b; padding: 20px; border-radius: 10px; border: 1px solid #334155; }
-    input, select, textarea, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 6px; box-sizing: border-box; }
-    input, select, textarea { background: #0f172a; border: 1px solid #334155; color: white; }
-    button { background: #0284c7; color: white; border: none; font-weight: bold; cursor: pointer; }
-    .status { padding: 8px; border-radius: 6px; text-align: center; margin: 8px 0; font-size: 14px; font-weight: bold; }
-    .off { background: #7f1d1d; }
-    .on { background: #14532d; }
-  </style>
-</head>
-<body>
-  <div class="box">
-    <h2 style="color: #38bdf8; text-align: center;">⚡ AuraNode Dashboard</h2>
+<!-- index.html-এর ভেতর এই কার্ডটি যোগ করুন -->
+<div class="card" style="margin-top: 20px;">
+  <div class="card-title">👥 সাম্প্রতিক কাস্টমার ও অর্ডার লিস্ট</div>
+  <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px;">
+    <thead>
+      <tr style="border-bottom: 1px solid #334155; color: #9ca3af; text-align: left;">
+        <th style="padding: 8px;">কাস্টমার</th>
+        <th style="padding: 8px;">ইউজারনেম</th>
+        <th style="padding: 8px;">প্রোডাক্ট</th>
+        <th style="padding: 8px;">ডেলিভারি ডাটা</th>
+      </tr>
+    </thead>
+    <tbody id="ordersTableBody">
+      <!-- Firebase থেকে স্বয়ংক্রিয়ভাবে ডাটা লোড হবে -->
+    </tbody>
+  </table>
+</div>
 
-    <label>Backend API URL:</label>
-    <input type="text" id="api" placeholder="https://your-app.onrender.com">
-    <button onclick="checkStatus()">সার্ভার চেক করুন</button>
-    <div id="statusBadge" class="status off">সার্ভার অফলাইন</div>
+<script type="module">
+  // কাস্টমার অর্ডার লাইভ শোনার ফাংশন
+  import { getFirestore, collection, query, orderBy, limit, onSnapshot } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 
-    <hr style="border: 0.5px solid #334155; margin: 15px 0;">
+  const db = getFirestore();
+  const q = query(collection(db, "orders"), orderBy("timestamp", "desc"), limit(10));
 
-    <label>Telegram Bot Token:</label>
-    <input type="text" id="token" placeholder="BotFather থেকে পাওয়া টোকেন">
-    <button onclick="connectBot()">Webhook যুক্ত করুন</button>
-
-    <hr style="border: 0.5px solid #334155; margin: 15px 0;">
-
-    <h3>📦 স্টক নিয়ন্ত্রণ</h3>
-    <p>VPN: <b id="vpnCount" style="color: #38bdf8;">0</b> | Proxy: <b id="proxyCount" style="color: #38bdf8;">0</b></p>
-    
-    <select id="cat">
-      <option value="vpn">VPN Key</option>
-      <option value="proxy">Residential Proxy</option>
-    </select>
-    <textarea id="items" rows="3" placeholder="প্রতি লাইনে একটি কী বা প্রক্সি দিন"></textarea>
-    <button onclick="addStock()">স্টকে যোগ করুন</button>
-  </div>
-
-  <script>
-    function getUrl() { return document.getElementById('api').value.trim().replace(/\/$/, ''); }
-
-    async function checkStatus() {
-      const url = getUrl();
-      if(!url) return alert("Backend URL দিন!");
-      try {
-        const res = await fetch(`${url}/api/dashboard/status`);
-        const data = await res.json();
-        const badge = document.getElementById('statusBadge');
-        if(data.connected) {
-          badge.className = "status on"; badge.innerText = "বট সক্রিয় ও লাইভ!";
-        } else {
-          badge.className = "status off"; badge.innerText = "টোকেন যুক্ত করা হয়নি";
-        }
-        loadStock();
-      } catch(e) {
-        alert("সার্ভারে কানেক্ট করা যাচ্ছে না!");
-      }
-    }
-
-    async function connectBot() {
-      const url = getUrl();
-      const token = document.getElementById('token').value.trim();
-      if(!url || !token) return alert("URL এবং Token উভয়ই দিন!");
-      const res = await fetch(`${url}/api/dashboard/connect-bot`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ token: token, server_url: url })
-      });
-      const data = await res.json();
-      alert(data.message || data.detail);
-      checkStatus();
-    }
-
-    async function loadStock() {
-      const url = getUrl();
-      if(!url) return;
-      try {
-        const res = await fetch(`${url}/api/products/stock`);
-        const data = await res.json();
-        document.getElementById('vpnCount').innerText = data.vpn_available;
-        document.getElementById('proxyCount').innerText = data.proxy_available;
-      } catch(e) {}
-    }
-
-    async function addStock() {
-      const url = getUrl();
-      const cat = document.getElementById('cat').value;
-      const raw = document.getElementById('items').value.trim();
-      if(!url || !raw) return alert("URL এবং ডাটা দিন!");
-      const items = raw.split('\n').map(i => i.trim()).filter(i => i);
-      const res = await fetch(`${url}/api/products/add-stock`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ category: cat, items: items })
-      });
-      const data = await res.json();
-      alert(data.message);
-      document.getElementById('items').value = '';
-      loadStock();
-    }
-  </script>
-</body>
-</html>
+  onSnapshot(q, (snapshot) => {
+    const tbody = document.getElementById("ordersTableBody");
+    tbody.innerHTML = "";
+    snapshot.forEach((doc) => {
+      const order = doc.data();
+      const tr = document.createElement("tr");
+      tr.style.borderBottom = "1px solid #1f2937";
+      tr.innerHTML = `
+        <td style="padding: 8px;">${order.first_name || 'Anonymous'}</td>
+        <td style="padding: 8px; color: #38bdf8;">@${order.username || 'N/A'}</td>
+        <td style="padding: 8px;"><b>${order.product}</b></td>
+        <td style="padding: 8px; font-family: monospace; color: #22c55e;">${order.delivered_credential}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  });
+</script>
