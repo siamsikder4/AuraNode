@@ -49,7 +49,7 @@
       gap: 20px;
     }
 
-    /* Top Navigation */
+    /* Top 3-Page Navigation */
     .nav {
       display: flex;
       background: var(--card-bg);
@@ -57,15 +57,15 @@
       border-radius: 14px;
       border: 1px solid var(--border);
       box-shadow: var(--shadow-sm);
-      gap: 8px;
+      gap: 6px;
     }
 
     .nav a {
       flex: 1;
       text-align: center;
       text-decoration: none;
-      padding: 10px 16px;
-      font-size: 14px;
+      padding: 10px 12px;
+      font-size: 13px;
       font-weight: 600;
       border-radius: 10px;
       color: var(--text-muted);
@@ -113,7 +113,6 @@
       border-radius: 18px;
       padding: 24px;
       box-shadow: var(--shadow-md);
-      transition: border-color 0.2s ease;
     }
 
     .card-title {
@@ -308,7 +307,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // ১. বট স্ট্যাটাস
+    // ১. বট স্ট্যাটাস ট্র্যাক
     onSnapshot(doc(db, "bot_config", "main"), (docSnap) => {
       const badge = document.getElementById("botStatusBadge");
       const botStatusText = document.getElementById("botStatusText");
@@ -325,7 +324,7 @@
       }
     });
 
-    // ২. লাইভ স্টক
+    // ২. লাইভ ইনভেন্টরি স্টক
     onSnapshot(doc(db, "inventory", "stock"), (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data();
@@ -334,7 +333,7 @@
       }
     });
 
-    // ৩. রিয়েলটাইম অর্ডার
+    // ৩. রিয়েলটাইম অর্ডার ট্র্যাকিং
     const q = query(collection(db, "orders"), orderBy("timestamp", "desc"), limit(10));
     onSnapshot(q, (snapshot) => {
       const tbody = document.getElementById("ordersTableBody");
@@ -398,10 +397,11 @@
 <body>
 
 <div class="container">
-  <!-- Top Navigation -->
+  <!-- Top 3-Page Navigation -->
   <div class="nav">
     <a href="index.html" class="active">📦 ইনভেন্টরি ও অর্ডার</a>
     <a href="bot-ui.html">🎨 বটের UI ও বাটন</a>
+    <a href="customers.html">👥 কাস্টমার লিস্ট</a>
   </div>
 
   <!-- Header -->
