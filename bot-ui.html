@@ -1,18 +1,16 @@
-```html
 <!DOCTYPE html>
 <html lang="bn">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>AuraNode - Drag & Drop Bot UI Designer</title>
-
-  <!-- Google Fonts & Font Awesome Icons -->
+  <title>AuraNode - Live Bot UI & Button Customizer</title>
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
-  <!-- SortableJS for Tactile Drag and Drop & Touch Mobile Sorting -->
+  <!-- ড্র্যাগ অ্যান্ড ড্রপের জন্য SortableJS -->
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
   <style>
@@ -23,439 +21,77 @@
       --text-main: #0f172a;
       --text-muted: #64748b;
       --primary: #2563eb;
-      --primary-hover: #1d4ed8;
-      --success: #10b981;
-      --danger: #ef4444;
-      --radius: 16px;
+      --success: #16a34a;
+      --danger: #dc2626;
       --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
-      --shadow-md: 0 8px 24px -4px rgba(15, 23, 42, 0.08);
-      --tg-bg: #0e1621;
-      --tg-bubble: #182533;
-      --tg-border: #242f3d;
+      --shadow-md: 0 6px 20px -2px rgba(15, 23, 42, 0.08);
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    body {
-      background-color: var(--bg);
-      color: var(--text-main);
-      padding: 16px;
-      padding-bottom: 90px;
-      display: flex;
-      justify-content: center;
-      min-height: 100vh;
-    }
-
-    .container {
-      width: 100%;
-      max-width: 520px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { background: var(--bg); color: var(--text-main); padding: 24px 16px; display: flex; justify-content: center; min-height: 100vh; }
+    .container { width: 100%; max-width: 600px; display: flex; flex-direction: column; gap: 18px; }
 
     /* Top Navigation */
-    .nav {
-      display: flex;
-      background: var(--card-bg);
-      padding: 6px;
-      border-radius: 14px;
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow-sm);
-      gap: 6px;
-    }
+    .nav { display: flex; background: var(--card-bg); padding: 6px; border-radius: 14px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); gap: 6px; }
+    .nav a { flex: 1; text-align: center; text-decoration: none; padding: 10px 12px; font-size: 13px; font-weight: 700; border-radius: 10px; color: var(--text-muted); transition: 0.2s; }
+    .nav a.active { background: var(--primary); color: #fff; }
 
-    .nav a {
-      flex: 1;
-      text-align: center;
-      text-decoration: none;
-      padding: 10px 8px;
-      font-size: 12px;
-      font-weight: 700;
-      border-radius: 10px;
-      color: var(--text-muted);
-      transition: all 0.2s ease;
-    }
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 18px; padding: 20px; box-shadow: var(--shadow-md); }
+    .card-title { font-size: 16px; font-weight: 700; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
 
-    .nav a.active {
-      background: var(--primary);
-      color: #ffffff;
-      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+    /* টেলিগ্রাম মোবাইল লাইভ মকআপ */
+    .tg-mockup { background: #17212b; border-radius: 18px; padding: 16px; border: 1px solid #242f3d; color: #fff; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+    .tg-msg { background: #182533; border-radius: 12px; padding: 14px; font-size: 13px; line-height: 1.5; border-left: 3px solid #5288c1; margin-bottom: 16px; }
+    
+    /* প্রিভিউ বাটন কনটেইনার */
+    .tg-keyboard-preview { display: flex; flex-wrap: wrap; gap: 8px; }
+    .preview-btn {
+      padding: 12px 10px; border-radius: 10px; text-align: center; font-size: 13px; font-weight: 700;
+      color: #fff; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px;
     }
+    .preview-btn.full { width: 100%; }
+    .preview-btn.half { width: calc(50% - 4px); }
 
-    /* Header */
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 2px 4px;
+    /* বাটন এডিটর লিস্ট (ড্র্যাগ-অ্যান্ড-ড্রপ) */
+    .btn-edit-list { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
+    .btn-edit-card {
+      background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; padding: 14px;
+      cursor: grab; display: flex; flex-direction: column; gap: 10px; position: relative;
     }
+    .btn-edit-card:active { cursor: grabbing; border-color: var(--primary); }
+    
+    .drag-handle { display: flex; align-items: center; justify-content: space-between; font-size: 12px; font-weight: 700; color: var(--text-muted); }
+    .drag-handle i { font-size: 14px; }
 
-    .header-text h1 {
-      font-size: 20px;
-      font-weight: 800;
-      letter-spacing: -0.5px;
+    .input-row { display: flex; gap: 8px; }
+    input, select, textarea {
+      width: 100%; padding: 10px 12px; background: #fff; border: 1px solid var(--border);
+      border-radius: 8px; font-size: 13px; font-weight: 600; outline: none;
     }
+    input:focus, select:focus { border-color: var(--primary); }
 
-    .header-text p {
-      font-size: 11px;
-      color: var(--text-muted);
-      font-weight: 600;
+    .btn-controls { display: flex; align-items: center; gap: 8px; }
+    .color-picker { width: 40px; height: 38px; padding: 2px; border-radius: 8px; cursor: pointer; border: 1px solid var(--border); }
+    
+    .btn-width-toggle {
+      flex: 1; padding: 8px; border: 1px solid var(--border); background: #fff; border-radius: 8px;
+      font-size: 12px; font-weight: 700; cursor: pointer; text-align: center; color: var(--text-muted);
     }
+    .btn-width-toggle.active { background: #e0e7ff; color: var(--primary); border-color: var(--primary); }
 
-    .save-badge {
-      font-size: 11px;
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-weight: 700;
-      background: #ecfdf5;
-      color: var(--success);
-      border: 1px solid #a7f3d0;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
+    .btn-save-all {
+      width: 100%; padding: 14px; background: var(--primary); color: #fff; border: none;
+      border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 16px;
+      box-shadow: 0 4px 14px rgba(37,99,235,0.3); transition: 0.2s;
     }
-
-    /* Card Layouts */
-    .card {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 18px;
-      box-shadow: var(--shadow-md);
-    }
-
-    .card-title {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--text-main);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-    }
-
-    /* Page Tabs Selector */
-    .page-tabs {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 6px;
-      background: #f1f5f9;
-      padding: 4px;
-      border-radius: 12px;
-      margin-bottom: 14px;
-    }
-
-    .page-tab-btn {
-      padding: 8px 4px;
-      border: none;
-      background: transparent;
-      border-radius: 8px;
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--text-muted);
-      cursor: pointer;
-      transition: all 0.2s ease;
-      text-align: center;
-    }
-
-    .page-tab-btn.active {
-      background: #ffffff;
-      color: var(--text-main);
-      box-shadow: var(--shadow-sm);
-    }
-
-    /* Telegram Live Preview Mockup */
-    .preview-container {
-      background: var(--tg-bg);
-      border-radius: 18px;
-      border: 1px solid var(--tg-border);
-      padding: 16px;
-      color: #ffffff;
-      box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
-    }
-
-    .tg-bubble {
-      background: var(--tg-bubble);
-      border-radius: 14px;
-      padding: 12px 14px;
-      font-size: 12px;
-      line-height: 1.5;
-      border-left: 3px solid #5288c1;
-      margin-bottom: 14px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-    }
-
-    .tg-bubble b {
-      color: #38bdf8;
-    }
-
-    /* Live Preview Keyboard Grid */
-    .tg-keyboard-live {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      min-height: 60px;
-    }
-
-    .tg-live-row {
-      display: flex;
-      gap: 6px;
-      width: 100%;
-    }
-
-    .tg-live-btn {
-      flex: 1;
-      padding: 10px 8px;
-      border-radius: 8px;
-      text-align: center;
-      font-size: 12px;
-      font-weight: 700;
-      color: #ffffff;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.25);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      transition: all 0.2s;
-    }
-
-    /* Drag & Drop Builder UI */
-    .builder-list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-top: 10px;
-    }
-
-    .button-drag-card {
-      background: #f8fafc;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      transition: all 0.2s ease;
-      cursor: grab;
-    }
-
-    .button-drag-card:active {
-      cursor: grabbing;
-    }
-
-    .button-drag-card.sortable-ghost {
-      opacity: 0.4;
-      background: #e2e8f0;
-      border: 2px dashed #94a3b8;
-    }
-
-    .btn-card-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-    }
-
-    .drag-handle {
-      color: var(--text-muted);
-      cursor: grab;
-      padding: 4px;
-      font-size: 14px;
-    }
-
-    .btn-text-input {
-      flex: 1;
-      padding: 8px 10px;
-      font-size: 13px;
-      font-weight: 600;
-      background: #ffffff;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      outline: none;
-    }
-
-    .btn-text-input:focus {
-      border-color: var(--primary);
-    }
-
-    .btn-card-controls {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
-
-    .color-swatches {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .color-dot {
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      cursor: pointer;
-      border: 2px solid transparent;
-      transition: all 0.15s ease;
-    }
-
-    .color-dot.active {
-      transform: scale(1.15);
-      border-color: #0f172a;
-    }
-
-    .custom-color-picker {
-      width: 24px;
-      height: 24px;
-      padding: 0;
-      border: none;
-      background: none;
-      cursor: pointer;
-      border-radius: 50%;
-    }
-
-    /* Position & Size Adjusters */
-    .tool-group {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .tool-btn {
-      padding: 5px 8px;
-      background: #ffffff;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--text-dark);
-      cursor: pointer;
-      transition: all 0.15s ease;
-    }
-
-    .tool-btn:hover {
-      background: #f1f5f9;
-      border-color: #cbd5e1;
-    }
-
-    .tool-btn.active {
-      background: var(--primary);
-      color: #ffffff;
-      border-color: var(--primary);
-    }
-
-    /* Custom Emoji ID Input field */
-    .emoji-id-box {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-top: 2px;
-    }
-
-    .emoji-id-box input {
-      flex: 1;
-      padding: 6px 10px;
-      background: #ffffff;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      font-size: 11px;
-      font-family: 'JetBrains Mono', monospace;
-      outline: none;
-    }
-
-    .emoji-id-box label {
-      font-size: 10px;
-      font-weight: 700;
-      color: var(--text-muted);
-      text-transform: uppercase;
-    }
-
-    /* Primary Save Action */
-    .save-btn {
-      width: 100%;
-      padding: 13px;
-      background: linear-gradient(135deg, var(--primary) 0%, #1d4ed8 100%);
-      color: #ffffff;
-      border: none;
-      border-radius: 12px;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
-      transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-
-    .save-btn:hover {
-      opacity: 0.95;
-      transform: translateY(-1px);
-    }
-
-    .save-btn:active {
-      transform: translateY(0);
-    }
-
-    /* Fixed Bottom Nav */
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: #ffffff;
-      border-top: 1px solid var(--border);
-      display: flex;
-      justify-content: space-around;
-      padding: 10px 0;
-      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
-      z-index: 1000;
-    }
-
-    .nav-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      color: var(--text-muted);
-      text-decoration: none;
-      font-size: 10px;
-      font-weight: 700;
-      transition: all 0.2s;
-    }
-
-    .nav-item i {
-      font-size: 18px;
-    }
-
-    .nav-item.active {
-      color: var(--primary);
-    }
-
-    .status-alert {
-      font-size: 12px;
-      font-weight: 600;
-      text-align: center;
-      min-height: 16px;
-      margin-top: 4px;
-    }
+    .btn-save-all:active { transform: scale(0.98); }
+    .status-text { font-size: 13px; text-align: center; margin-top: 10px; font-weight: 700; min-height: 18px; }
   </style>
 
-  <!-- Firebase Scripts -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
     import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 
-    // Firebase কনফিগারেশন (auranode-58027)
     const firebaseConfig = {
       apiKey: "AIzaSyCNhEQkvKdqk3SK-Ot7boIbJl-44b9QJyc",
       authDomain: "auranode-58027.firebaseapp.com",
@@ -468,61 +104,110 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // ডিফল্ট বাটন স্ট্রাকচার ও লেআউট স্টেট
-    window.botPagesData = {
-      menu: [
-        { id: "b1", text: "🎉 Buy Product", color: "#16a34a", width: "full", row: 1, emoji_id: "" },
-        { id: "b2", text: "👤 My Profile", color: "#0284c7", width: "half", row: 2, emoji_id: "" },
-        { id: "b3", text: "💳 Deposit", color: "#0284c7", width: "half", row: 2, emoji_id: "" },
-        { id: "b4", text: "🛡️ Get Code", color: "#16a34a", width: "half", row: 3, emoji_id: "" },
-        { id: "b5", text: "🎧 Support", color: "#0284c7", width: "half", row: 3, emoji_id: "" }
-      ],
-      categories: [
-        { id: "c1", text: "🛡️ VPN", color: "#0284c7", width: "half", row: 1, emoji_id: "" },
-        { id: "c2", text: "🌐 Proxy", color: "#0284c7", width: "half", row: 1, emoji_id: "" },
-        { id: "c3", text: "✉️ Mail", color: "#0284c7", width: "full", row: 2, emoji_id: "" },
-        { id: "c4", text: "❌ Cancel", color: "#dc2626", width: "full", row: 3, emoji_id: "" }
-      ],
-      summary: [
-        { id: "s1", text: "➖", color: "#dc2626", width: "half", row: 1, emoji_id: "" },
-        { id: "s2", text: "1", color: "#0284c7", width: "half", row: 1, emoji_id: "" },
-        { id: "s3", text: "➕", color: "#16a34a", width: "half", row: 1, emoji_id: "" },
-        { id: "s4", text: "🔙 Back", color: "#dc2626", width: "half", row: 2, emoji_id: "" },
-        { id: "s5", text: "❌ Cancel", color: "#dc2626", width: "half", row: 2, emoji_id: "" },
-        { id: "s6", text: "✅ Confirm", color: "#16a34a", width: "full", row: 3, emoji_id: "" }
-      ]
-    };
+    // ডিফল্ট বাটন কনফিগারেশন
+    let buttonsData = [
+      { id: "buy", label: "🎉 Buy Product", width: "full", color: "#16a34a", emoji_id: "" },
+      { id: "profile", label: "👤 My Profile", width: "half", color: "#2563eb", emoji_id: "" },
+      { id: "deposit", label: "💳 Deposit", width: "half", color: "#2563eb", emoji_id: "" },
+      { id: "code", label: "🛡️ Get Code", width: "half", color: "#16a34a", emoji_id: "" },
+      { id: "support", label: "🎧 Support", width: "half", color: "#2563eb", emoji_id: "" }
+    ];
 
-    window.activeTab = "menu";
-
-    // Firestore থেকে রিয়েলটাইম লোড
-    onSnapshot(doc(db, "bot_ui", "layout_matrix"), (docSnap) => {
+    // রিয়েলটাইম ডাটাবেস থেকে লোড
+    onSnapshot(doc(db, "bot_ui", "settings"), (docSnap) => {
       if (docSnap.exists()) {
-        const data = docSnap.data();
-        if (data.menu) window.botPagesData.menu = data.menu;
-        if (data.categories) window.botPagesData.categories = data.categories;
-        if (data.summary) window.botPagesData.summary = data.summary;
+        const d = docSnap.data();
+        if (d.shop_name) document.getElementById("shopName").value = d.shop_name;
+        if (d.welcome_text) document.getElementById("welcomeText").value = d.welcome_text;
+        if (d.buttons && Array.isArray(d.buttons)) {
+          buttonsData = d.buttons;
+        }
       }
-      window.renderCurrentPage();
+      renderEditor();
+      renderLivePreview();
     });
 
-    // Firestore এ লেআউট ম্যাট্রিক্স সেভ করা
-    window.saveLayoutToFirestore = async function() {
-      const status = document.getElementById("statusAlert");
+    // বাটন এডিটর ড্র্যাগ-অ্যান্ড-ড্রপ রেন্ডার
+    function renderEditor() {
+      const container = document.getElementById("btnList");
+      container.innerHTML = "";
+
+      buttonsData.forEach((btn, index) => {
+        const card = document.createElement("div");
+        card.className = "btn-edit-card";
+        card.dataset.index = index;
+
+        card.innerHTML = `
+          <div class="drag-handle">
+            <span><i class="fa-solid fa-grip-vertical"></i> বাটন #${index + 1} (চাপ দিয়ে ধরে পজিশন বদলান)</span>
+          </div>
+          <div class="input-row">
+            <input type="text" value="${btn.label}" placeholder="বাটন নাম" oninput="updateLabel(${index}, this.value)">
+            <input type="text" value="${btn.emoji_id || ''}" placeholder="Emoji ID" style="max-width: 120px;" oninput="updateEmoji(${index}, this.value)">
+          </div>
+          <div class="btn-controls">
+            <input type="color" class="color-picker" value="${btn.color || '#2563eb'}" onchange="updateColor(${index}, this.value)">
+            <button class="btn-width-toggle ${btn.width === 'full' ? 'active' : ''}" onclick="toggleWidth(${index}, 'full')">ফুল স্ক্রিন (১০০%)</button>
+            <button class="btn-width-toggle ${btn.width === 'half' ? 'active' : ''}" onclick="toggleWidth(${index}, 'half')">অর্ধেক (৫০%)</button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+
+      // Sortable ইনিশিয়ালাইজেশন
+      new Sortable(container, {
+        animation: 150,
+        handle: '.btn-edit-card',
+        onEnd: function (evt) {
+          const item = buttonsData.splice(evt.oldIndex, 1)[0];
+          buttonsData.splice(evt.newIndex, 0, item);
+          renderEditor();
+          renderLivePreview();
+        }
+      });
+    }
+
+    // লাইভ প্রিভিউ রেন্ডার
+    function renderLivePreview() {
+      const pTitle = document.getElementById("shopName").value || "AuraNode Store";
+      document.getElementById("prevShopName").innerText = pTitle;
+
+      const pContainer = document.getElementById("previewKeyboard");
+      pContainer.innerHTML = "";
+
+      buttonsData.forEach(btn => {
+        const b = document.createElement("div");
+        b.className = `preview-btn ${btn.width}`;
+        b.style.backgroundColor = btn.color || "#2563eb";
+        b.innerHTML = `${btn.label}`;
+        pContainer.appendChild(b);
+      });
+    }
+
+    // এডিট ইভেন্ট হ্যান্ডলার
+    window.updateLabel = (i, val) => { buttonsData[i].label = val; renderLivePreview(); };
+    window.updateEmoji = (i, val) => { buttonsData[i].emoji_id = val; renderLivePreview(); };
+    window.updateColor = (i, val) => { buttonsData[i].color = val; renderLivePreview(); };
+    window.toggleWidth = (i, w) => { buttonsData[i].width = w; renderEditor(); renderLivePreview(); };
+    window.onTextChange = () => renderLivePreview();
+
+    // Firebase-এ সেভ করা
+    window.saveAllToFirebase = async function() {
+      const status = document.getElementById("statusMsg");
       status.style.color = "var(--text-muted)";
-      status.innerText = "ক্লাউডে সিঙ্ক হচ্ছে...";
+      status.innerText = "সংরক্ষণ করা হচ্ছে...";
+
+      const payload = {
+        shop_name: document.getElementById("shopName").value.trim(),
+        welcome_text: document.getElementById("welcomeText").value.trim(),
+        buttons: buttonsData,
+        updatedAt: new Date()
+      };
 
       try {
-        await setDoc(doc(db, "bot_ui", "layout_matrix"), {
-          menu: window.botPagesData.menu,
-          categories: window.botPagesData.categories,
-          summary: window.botPagesData.summary,
-          updatedAt: new Date()
-        }, { merge: true });
-
+        await setDoc(doc(db, "bot_ui", "settings"), payload, { merge: true });
         status.style.color = "var(--success)";
-        status.innerText = "✅ লেআউট ও কালার সফলভাবে Telegram বটে লাইভ হয়েছে!";
-        setTimeout(() => { status.innerText = ""; }, 4000);
+        status.innerText = "সফলভাবে সেভ হয়েছে! বটে বাটন পজিশন ও কালার লাইভ হয়ে গেছে।";
       } catch (e) {
         status.style.color = "var(--danger)";
         status.innerText = "ত্রুটি: " + e.message;
@@ -532,309 +217,45 @@
 </head>
 <body>
 
-  <div class="container">
-    
-    <!-- Top Nav -->
-    <nav class="nav">
-      <a href="index.html">📦 ইনভেন্টরি</a>
-      <a href="bot-ui.html" class="active">🎨 বট UI কাস্টমাইজার</a>
-      <a href="customers.html">👥 কাস্টমার</a>
-    </nav>
-
-    <!-- Header -->
-    <header class="header">
-      <div class="header-text">
-        <h1>Bot UI & Button Studio</h1>
-        <p>টেলিগ্রাম বাটন পজিশন, ড্র্যাগ-অ্যান্ড-ড্রপ ও কালার কন্ট্রোলার</p>
-      </div>
-      <span class="save-badge"><i class="fa-solid fa-circle" style="font-size: 8px;"></i> Live Sync</span>
-    </header>
-
-    <!-- Live Telegram Mockup Section -->
-    <div class="card" style="padding: 14px;">
-      <div class="card-title">
-        <span>📱 Telegram Mobile Live Preview</span>
-        <span style="font-size: 11px; color: var(--text-muted); font-weight: 600;">রিয়েলটাইম প্রিভিউ</span>
-      </div>
-
-      <div class="preview-container">
-        <!-- Message Bubble Header Dynamic based on Tab -->
-        <div class="tg-bubble" id="tgPreviewBubble">
-          👋 <b>স্বাগতম Customer!</b><br>
-          ⚡ <b>AuraNode Digital Store</b> - এ আপনাকে স্বাগতম!<br>
-          <i>নিচের অপশন থেকে সিলেক্ট করুন:</i>
-        </div>
-
-        <!-- Rendered Buttons Grid in Live View -->
-        <div class="tg-keyboard-live" id="tgLiveKeyboard"></div>
-      </div>
-    </div>
-
-    <!-- Multi-Page Tab Controls -->
-    <div class="card">
-      <div class="card-title">
-        <span>🛠️ বাটন ও লেআউট এডিটর</span>
-        <button class="tool-btn" onclick="addNewButton()"><i class="fa-solid fa-plus"></i> বাটন যোগ</button>
-      </div>
-
-      <!-- পেজ সিলেক্টর -->
-      <div class="page-tabs">
-        <button class="page-tab-btn active" onclick="switchPageTab('menu')">১. মেইন মেনু</button>
-        <button class="page-tab-btn" onclick="switchPageTab('categories')">২. ক্যাটাগরি পেজ</button>
-        <button class="page-tab-btn" onclick="switchPageTab('summary')">৩. সামারি পেজ</button>
-      </div>
-
-      <div style="font-size: 11px; color: var(--text-muted); font-weight: 600; margin-bottom: 8px;">
-        💡 বাটনগুলো <b>চেপে ধরে উপরে/নিচে টেনে ড্রপ</b> করুন অথবা লেফট/রাইট টুলস ব্যবহার করুন।
-      </div>
-
-      <!-- Drag & Drop Button List -->
-      <div class="builder-list" id="builderList"></div>
-
-      <!-- Save Action Button -->
-      <div style="margin-top: 16px;">
-        <button class="save-btn" onclick="saveLayoutToFirestore()">
-          <i class="fa-solid fa-floppy-disk"></i> বটে লেআউট ও কালার আপডেট করুন
-        </button>
-        <div class="status-alert" id="statusAlert"></div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- Bottom Mobile Navigation -->
-  <nav class="bottom-nav">
-    <a href="index.html" class="nav-item">
-      <i class="fa-solid fa-house"></i>
-      <span>হোম</span>
-    </a>
-    <a href="customers.html" class="nav-item">
-      <i class="fa-solid fa-user-group"></i>
-      <span>কাস্টমার</span>
-    </a>
-    <a href="bot-ui.html" class="nav-item active">
-      <i class="fa-solid fa-palette"></i>
-      <span>বট UI</span>
-    </a>
+<div class="container">
+  <!-- Navbar -->
+  <nav class="nav">
+    <a href="index.html">📦 ইনভেন্টরি</a>
+    <a href="bot-ui.html" class="active">🎨 বটের UI ও বাটন</a>
+    <a href="customers.html">👥 কাস্টমার</a>
   </nav>
 
-  <script>
-    const PRESET_COLORS = [
-      "#16a34a", // Emerald Green
-      "#0284c7", // Telegram Blue
-      "#dc2626", // Coral Red
-      "#334155", // Slate
-      "#6366f1", // Indigo
-      "#ea580c"  // Orange
-    ];
+  <!-- লাইভ মকআপ -->
+  <div class="card">
+    <div class="card-title">📱 লাইভ প্রিভিউ (উপরে দেখুন)</div>
+    <div class="tg-mockup">
+      <div class="tg-msg">
+        👋 <b>Welcome!</b><br>
+        ⚡ <span id="prevShopName" style="color:#38bdf8;">AuraNode Store</span><br>
+        <span id="prevWelcome">স্বাগতম আমাদের স্টোরে! নিচে ক্লিক করুন:</span>
+      </div>
+      <!-- লাইভ বাটনসমূহ -->
+      <div class="tg-keyboard-preview" id="previewKeyboard"></div>
+    </div>
+  </div>
 
-    let sortableInstance = null;
+  <!-- সেটিংস ও বাটন ড্র্যাগ-অ্যান্ড-ড্রপ -->
+  <div class="card">
+    <div class="card-title">⚙️ বাটন সাজান ও কালার দিন</div>
 
-    // পেজ ট্যাব পরিবর্তন
-    function switchPageTab(tabName) {
-      window.activeTab = tabName;
-      document.querySelectorAll('.page-tab-btn').forEach((btn, idx) => {
-        btn.classList.toggle('active', 
-          (idx === 0 && tabName === 'menu') || 
-          (idx === 1 && tabName === 'categories') || 
-          (idx === 2 && tabName === 'summary')
-        );
-      });
+    <label style="font-size:12px; font-weight:700; color:var(--text-muted); margin-bottom:4px; display:block;">শপের নাম</label>
+    <input type="text" id="shopName" value="Your Proxy & VPN" oninput="onTextChange()" style="margin-bottom:12px;">
 
-      // টেলিগ্রাম চ্যাট বাবলের টেক্সট পরিবর্তন
-      const bubble = document.getElementById("tgPreviewBubble");
-      if (tabName === "menu") {
-        bubble.innerHTML = "👋 <b>স্বাগতম Customer!</b><br>⚡ <b>AuraNode Digital Store</b> - এ আপনাকে স্বাগতম!<br><i>নিচের অপশন থেকে বেছে নিন:</i>";
-      } else if (tabName === "categories") {
-        bubble.innerHTML = "🛒 <b>Buy Products</b><br>Select a category from below:";
-      } else if (tabName === "summary") {
-        bubble.innerHTML = "🧾 <b>PURCHASE SUMMARY</b><br>Quantity: <b>1</b> | Rate: <b>6.00 BDT</b><br>Total: <b>6.00 BDT</b>";
-      }
+    <label style="font-size:12px; font-weight:700; color:var(--text-muted); margin-bottom:4px; display:block;">ওয়েলকাম মেসেজ</label>
+    <textarea id="welcomeText" rows="2" oninput="onTextChange()" style="margin-bottom:14px;">স্বাগতম আমাদের স্টোরে! নিচে ক্লিক করুন:</textarea>
 
-      renderCurrentPage();
-    }
+    <label style="font-size:12px; font-weight:700; color:var(--text-muted); margin-bottom:4px; display:block;">বাটন লিস্ট (ড্র্যাগ করে ওপরে-নিচে নিন)</label>
+    <div class="btn-edit-list" id="btnList"></div>
 
-    // বর্তমান পেজের বাটন ও লাইভ ভিউ রেন্ডার
-    function renderCurrentPage() {
-      const currentList = window.botPagesData[window.activeTab] || [];
-      renderLiveTelegram(currentList);
-      renderBuilderList(currentList);
-    }
+    <button class="btn-save-all" onclick="saveAllToFirebase()">বটের লাইভ বাটন আপডেট করুন</button>
+    <div id="statusMsg" class="status-text"></div>
+  </div>
+</div>
 
-    // ১. লাইভ টেলিগ্রাম প্রিভিউ তৈরি (Grid/Row Formatting)
-    function renderLiveTelegram(btnList) {
-      const container = document.getElementById("tgLiveKeyboard");
-      container.innerHTML = "";
-
-      let currentRow = [];
-      let currentRowIdx = 1;
-
-      btnList.forEach((btn, idx) => {
-        if (btn.width === "full") {
-          // যদি আগের কোনো হাফ রো জমে থাকে তা রেন্ডার করা
-          if (currentRow.length > 0) {
-            container.appendChild(createLiveRow(currentRow));
-            currentRow = [];
-          }
-          container.appendChild(createLiveRow([btn]));
-        } else {
-          currentRow.push(btn);
-          if (currentRow.length === 2 || idx === btnList.length - 1) {
-            container.appendChild(createLiveRow(currentRow));
-            currentRow = [];
-          }
-        }
-      });
-    }
-
-    function createLiveRow(buttons) {
-      const rowDiv = document.createElement("div");
-      rowDiv.className = "tg-live-row";
-      buttons.forEach(btn => {
-        const b = document.createElement("div");
-        b.className = "tg-live-btn";
-        b.style.backgroundColor = btn.color || "#0284c7";
-        b.innerText = btn.text || "Button";
-        if (btn.emoji_id) {
-          b.title = `Custom Emoji ID: ${btn.emoji_id}`;
-        }
-        rowDiv.appendChild(b);
-      });
-      return rowDiv;
-    }
-
-    // ২. ড্র্যাগ অ্যান্ড ড্রপ এডিটর কার্ডস তৈরি
-    function renderBuilderList(btnList) {
-      const container = document.getElementById("builderList");
-      container.innerHTML = "";
-
-      btnList.forEach((btn, index) => {
-        const card = document.createElement("div");
-        card.className = "button-drag-card";
-        card.dataset.index = index;
-
-        // কালার প্যালেট
-        let colorDotsHtml = PRESET_COLORS.map(c => `
-          <div class="color-dot ${btn.color === c ? 'active' : ''}" 
-               style="background: ${c};" 
-               onclick="updateBtnColor(${index}, '${c}')"></div>
-        `).join('');
-
-        card.innerHTML = `
-          <div class="btn-card-head">
-            <i class="fa-solid fa-grip-vertical drag-handle"></i>
-            <input type="text" class="btn-text-input" value="${escapeHtml(btn.text)}" oninput="updateBtnText(${index}, this.value)">
-            <button class="tool-btn" style="color: var(--danger);" onclick="deleteButton(${index})"><i class="fa-solid fa-trash"></i></button>
-          </div>
-
-          <div class="btn-card-controls">
-            <!-- কালার সিলেক্টর -->
-            <div class="color-swatches">
-              ${colorDotsHtml}
-              <input type="color" class="custom-color-picker" value="${btn.color || '#0284c7'}" onchange="updateBtnColor(${index}, this.value)">
-            </div>
-
-            <!-- পজিশন ও সাইজ টুলস -->
-            <div class="tool-group">
-              <button class="tool-btn ${btn.width === 'full' ? 'active' : ''}" onclick="toggleWidth(${index})" title="ফুল উইডথ / হাফ উইডথ">
-                ${btn.width === 'full' ? '<i class="fa-solid fa-arrows-left-right"></i> Full' : '<i class="fa-solid fa-table-columns"></i> Half'}
-              </button>
-              <button class="tool-btn" onclick="moveBtn(${index}, -1)" title="উপরে তুলুন"><i class="fa-solid fa-arrow-up"></i></button>
-              <button class="tool-btn" onclick="moveBtn(${index}, 1)" title="নিচে নামান"><i class="fa-solid fa-arrow-down"></i></button>
-            </div>
-          </div>
-
-          <div class="emoji-id-box">
-            <label>Emoji ID:</label>
-            <input type="text" placeholder="Custom Emoji ID (Optional)" value="${escapeHtml(btn.emoji_id || '')}" oninput="updateEmojiId(${index}, this.value)">
-          </div>
-        `;
-
-        container.appendChild(card);
-      });
-
-      // SortableJS ড্র্যাগ অ্যান্ড ড্রপ ইনিশিয়ালাইজেশন
-      if (sortableInstance) sortableInstance.destroy();
-      sortableInstance = new Sortable(container, {
-        handle: '.drag-handle',
-        animation: 150,
-        ghostClass: 'sortable-ghost',
-        onEnd: function (evt) {
-          const list = window.botPagesData[window.activeTab];
-          const item = list.splice(evt.oldIndex, 1)[0];
-          list.splice(evt.newIndex, 0, item);
-          renderCurrentPage();
-        }
-      });
-    }
-
-    // বাটন টেক্সট আপডেট
-    window.updateBtnText = function(index, newText) {
-      window.botPagesData[window.activeTab][index].text = newText;
-      renderLiveTelegram(window.botPagesData[window.activeTab]);
-    };
-
-    // বাটন কালার আপডেট
-    window.updateBtnColor = function(index, color) {
-      window.botPagesData[window.activeTab][index].color = color;
-      renderCurrentPage();
-    };
-
-    // বাটন ফুল / হাফ উইডথ টগল
-    window.toggleWidth = function(index) {
-      const btn = window.botPagesData[window.activeTab][index];
-      btn.width = btn.width === "full" ? "half" : "full";
-      renderCurrentPage();
-    };
-
-    // বাটন ইমোজি আইডি আপডেট
-    window.updateEmojiId = function(index, eid) {
-      window.botPagesData[window.activeTab][index].emoji_id = eid.trim();
-      renderLiveTelegram(window.botPagesData[window.activeTab]);
-    };
-
-    // বাটন পজিশন উপরে/নিচে সরানো
-    window.moveBtn = function(index, direction) {
-      const list = window.botPagesData[window.activeTab];
-      const targetIndex = index + direction;
-      if (targetIndex >= 0 && targetIndex < list.length) {
-        const temp = list[index];
-        list[index] = list[targetIndex];
-        list[targetIndex] = temp;
-        renderCurrentPage();
-      }
-    };
-
-    // নতুন বাটন যোগ করা
-    window.addNewButton = function() {
-      const list = window.botPagesData[window.activeTab];
-      list.push({
-        id: "b_" + Date.now(),
-        text: "✨ New Button",
-        color: "#0284c7",
-        width: "half",
-        emoji_id: ""
-      });
-      renderCurrentPage();
-    };
-
-    // বাটন ডিলিট করা
-    window.deleteButton = function(index) {
-      const list = window.botPagesData[window.activeTab];
-      if (list.length <= 1) return alert("কমপক্ষে একটি বাটন রাখা আবশ্যক!");
-      list.splice(index, 1);
-      renderCurrentPage();
-    };
-
-    function escapeHtml(text) {
-      return (text || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-    }
-
-    // প্রথম রেন্ডার চালু করা
-    window.addEventListener('DOMContentLoaded', () => {
-      renderCurrentPage();
-    });
-  </script>
 </body>
 </html>
-```
