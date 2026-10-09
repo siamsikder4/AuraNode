@@ -3,50 +3,56 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AuraNode - Bot UI Designer</title>
+  <title>AuraNode - Bot UI & Button Customizer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #0b0f19;
-      --card-bg: #111827;
-      --border: #1f2937;
-      --accent: #38bdf8;
-      --text: #f3f4f6;
-      --text-muted: #9ca3af;
-      --btn-green: #16a34a;
-      --btn-blue: #0284c7;
-      --btn-red: #dc2626;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --border: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --primary: #2563eb;
+      --success: #10b981;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+      --shadow-md: 0 4px 20px -2px rgba(15, 23, 42, 0.06);
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background: var(--bg); color: var(--text); padding: 20px 14px; display: flex; justify-content: center; }
-    .container { width: 100%; max-width: 600px; display: flex; flex-direction: column; gap: 16px; }
-    
-    /* Top Navbar */
-    .nav { display: flex; gap: 10px; background: var(--card-bg); padding: 8px; border-radius: 10px; border: 1px solid var(--border); }
-    .nav a { flex: 1; text-align: center; text-decoration: none; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 8px; color: var(--text-muted); }
-    .nav a.active { background: #0284c7; color: #fff; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { background: var(--bg); color: var(--text-main); padding: 32px 16px; display: flex; justify-content: center; min-height: 100vh; }
+    .container { width: 100%; max-width: 680px; display: flex; flex-direction: column; gap: 20px; }
 
-    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 18px; }
-    .card-title { font-size: 16px; font-weight: 600; color: var(--accent); margin-bottom: 12px; }
-    label { display: block; font-size: 13px; color: var(--text-muted); margin: 10px 0 4px; }
-    input, textarea {
-      width: 100%; padding: 11px; background: #070b14; border: 1px solid var(--border);
-      border-radius: 8px; color: #fff; font-size: 14px;
+    /* Top Navigation */
+    .nav { display: flex; background: var(--card-bg); padding: 6px; border-radius: 14px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); gap: 6px; }
+    .nav a { flex: 1; text-align: center; text-decoration: none; padding: 10px 12px; font-size: 13px; font-weight: 600; border-radius: 10px; color: var(--text-muted); transition: 0.2s; }
+    .nav a.active { background: var(--primary); color: #fff; box-shadow: 0 2px 8px rgba(37,99,235,0.25); }
+    .nav a:hover:not(.active) { background: #f1f5f9; color: var(--text-main); }
+
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 18px; padding: 24px; box-shadow: var(--shadow-md); }
+    .card-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+
+    /* Telegram Live Preview Mockup */
+    .preview-phone { background: #17212b; border-radius: 16px; padding: 16px; border: 1px solid #242f3d; color: #fff; }
+    .preview-msg { background: #182533; border-radius: 12px; padding: 14px; font-size: 13px; line-height: 1.5; border-left: 3px solid #5288c1; margin-bottom: 14px; }
+    .mock-keyboard { display: flex; flex-direction: column; gap: 8px; }
+    .mock-btn { background: #232e3c; color: #fff; padding: 10px; border-radius: 8px; text-align: center; font-size: 13px; font-weight: 600; }
+    .mock-btn.top-btn { background: #16a34a; }
+    .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+    label { display: block; font-size: 13px; font-weight: 600; color: var(--text-muted); margin: 12px 0 6px; }
+    input, textarea, select {
+      width: 100%; padding: 12px 14px; background: #f8fafc; border: 1px solid var(--border);
+      border-radius: 10px; font-size: 14px; color: var(--text-main); outline: none; transition: 0.2s;
     }
-    input:focus, textarea:focus { border-color: var(--accent); outline: none; }
+    input:focus, textarea:focus, select:focus { border-color: var(--primary); background: #fff; }
     button {
-      width: 100%; padding: 12px; background: #0284c7; color: white; border: none;
-      border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 14px;
+      width: 100%; padding: 13px; background: linear-gradient(135deg, var(--primary) 0%, #1d4ed8 100%);
+      color: #fff; border: none; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 16px;
+      box-shadow: 0 4px 12px rgba(37,99,235,0.2); transition: 0.2s;
     }
-    button:hover { background: #0369a1; }
-    
-    /* Live Preview Telegram Mobile UI Mockup */
-    .preview-box { background: #17212b; border-radius: 12px; padding: 16px; border: 1px solid #242f3d; }
-    .tg-msg { background: #182533; border-radius: 10px; padding: 12px; font-size: 13px; line-height: 1.5; border-left: 3px solid #5288c1; margin-bottom: 12px; }
-    .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
-    .mock-btn { background: var(--btn-blue); color: #fff; padding: 10px; border-radius: 8px; text-align: center; font-size: 13px; font-weight: 600; }
-    .mock-btn.green { background: var(--btn-green); }
-    .mock-btn.red { background: var(--btn-red); }
-    .status-msg { font-size: 13px; text-align: center; margin-top: 8px; min-height: 18px; color: #4ade80; }
+    button:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(37,99,235,0.3); }
+    .status-msg { font-size: 13px; text-align: center; margin-top: 10px; min-height: 18px; font-weight: 600; }
   </style>
 
   <script type="module">
@@ -65,88 +71,131 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // UI সেটিংস লোড করা
+    // রিয়েলটাইমে বটের UI কনফিগ লোড
     onSnapshot(doc(db, "bot_ui", "settings"), (docSnap) => {
       if (docSnap.exists()) {
         const d = docSnap.data();
-        if (d.shop_title) document.getElementById("shopTitle").value = d.shop_title;
-        if (d.support_user) document.getElementById("supportUser").value = d.support_user;
-        if (d.emoji_id) document.getElementById("emojiId").value = d.emoji_id;
+        if (d.shop_name) document.getElementById("shopName").value = d.shop_name;
         if (d.welcome_text) document.getElementById("welcomeText").value = d.welcome_text;
+        if (d.custom_emoji_id) document.getElementById("customEmojiId").value = d.custom_emoji_id;
+        if (d.btn_buy) document.getElementById("btnBuy").value = d.btn_buy;
+        if (d.btn_profile) document.getElementById("btnProfile").value = d.btn_profile;
+        if (d.btn_deposit) document.getElementById("btnDeposit").value = d.btn_deposit;
+        if (d.btn_code) document.getElementById("btnCode").value = d.btn_code;
+        if (d.btn_support) document.getElementById("btnSupport").value = d.btn_support;
         updatePreview();
       }
     });
 
-    window.saveBotUi = async function() {
-      const shop_title = document.getElementById("shopTitle").value.trim();
-      const support_user = document.getElementById("supportUser").value.trim();
-      const emoji_id = document.getElementById("emojiId").value.trim();
-      const welcome_text = document.getElementById("welcomeText").value.trim();
-      const status = document.getElementById("statusMsg");
-
-      status.innerText = "সংরক্ষণ হচ্ছে...";
-      try {
-        await setDoc(doc(db, "bot_ui", "settings"), {
-          shop_title, support_user, emoji_id, welcome_text, updatedAt: new Date()
-        }, { merge: true });
-        status.innerText = "বট UI কনফিগ ক্লাউডে আপডেট হয়েছে!";
-      } catch (e) {
-        status.innerText = "সমস্যা: " + e.message;
-      }
+    window.updatePreview = function() {
+      document.getElementById("prevShopName").innerText = document.getElementById("shopName").value || "AuraNode Store";
+      document.getElementById("prevBtnBuy").innerText = document.getElementById("btnBuy").value || "🎉 Buy Product";
+      document.getElementById("prevBtnProf").innerText = document.getElementById("btnProfile").value || "👤 My Profile";
+      document.getElementById("prevBtnDep").innerText = document.getElementById("btnDeposit").value || "💳 Deposit";
+      document.getElementById("prevBtnCode").innerText = document.getElementById("btnCode").value || "🛡️ Get Code";
+      document.getElementById("prevBtnSup").innerText = document.getElementById("btnSupport").value || "🎧 Support";
     };
 
-    window.updatePreview = function() {
-      const title = document.getElementById("shopTitle").value || "AuraNode Store";
-      document.getElementById("prevTitle").innerText = title;
+    window.saveBotUi = async function() {
+      const status = document.getElementById("statusMsg");
+      status.style.color = "var(--text-muted)";
+      status.innerText = "সংরক্ষণ করা হচ্ছে...";
+
+      const settings = {
+        shop_name: document.getElementById("shopName").value.trim(),
+        welcome_text: document.getElementById("welcomeText").value.trim(),
+        custom_emoji_id: document.getElementById("customEmojiId").value.trim(),
+        btn_buy: document.getElementById("btnBuy").value.trim(),
+        btn_profile: document.getElementById("btnProfile").value.trim(),
+        btn_deposit: document.getElementById("btnDeposit").value.trim(),
+        btn_code: document.getElementById("btnCode").value.trim(),
+        btn_support: document.getElementById("btnSupport").value.trim(),
+        updatedAt: new Date()
+      };
+
+      try {
+        await setDoc(doc(db, "bot_ui", "settings"), settings, { merge: true });
+        status.style.color = "var(--success)";
+        status.innerText = "বটের বাটন ও UI সফলভাবে আপডেট হয়েছে! বটে সরাসরি পরিবর্তন কার্যকর হবে।";
+      } catch (e) {
+        status.style.color = "#ef4444";
+        status.innerText = "ত্রুটি: " + e.message;
+      }
     };
   </script>
 </head>
 <body>
 
 <div class="container">
-  <!-- Navbar -->
+  <!-- Top Navigation -->
   <div class="nav">
     <a href="index.html">📦 ইনভেন্টরি ও অর্ডার</a>
     <a href="bot-ui.html" class="active">🎨 বটের UI ও বাটন</a>
+    <a href="customers.html">👥 কাস্টমার লিস্ট</a>
   </div>
 
   <!-- লাইভ প্রিভিউ -->
   <div class="card">
-    <div class="card-title">📱 বটের লাইভ প্রিভিউ (Telegram UI)</div>
-    <div class="preview-box">
-      <div class="tg-msg">
+    <div class="card-title">📱 টেলিগ্রাম বট লাইভ প্রিভিউ</div>
+    <div class="preview-phone">
+      <div class="preview-msg">
         👋 <b>Welcome!</b><br>
-        ⚡ <span id="prevTitle" style="color:#38bdf8;">AuraNode Store</span>-এ স্বাগতম!<br>
-        এখানে প্রিমিয়াম VPN এবং প্রক্সি পেয়ে যাবেন ইনস্ট্যান্ট ডেলিভারিতে।
+        ⚡ <span id="prevShopName" style="color:#38bdf8;">AuraNode Store</span>-এ স্বাগতম!<br>
+        ইনস্ট্যান্ট VPN ও Residential Proxy ডেলিভারি চালু আছে।
       </div>
-      <!-- বটের বাটন লেআউট -->
-      <div class="mock-btn green" style="margin-bottom:8px;">🎉 Buy Product</div>
-      <div class="btn-row">
-        <div class="mock-btn">👤 My Profile</div>
-        <div class="mock-btn">💳 Deposit</div>
-      </div>
-      <div class="btn-row">
-        <div class="mock-btn green">🛡️ Get Code</div>
-        <div class="mock-btn">🎧 Support</div>
+      <div class="mock-keyboard">
+        <div id="prevBtnBuy" class="mock-btn top-btn">🎉 Buy Product</div>
+        <div class="btn-row">
+          <div id="prevBtnProf" class="mock-btn">👤 My Profile</div>
+          <div id="prevBtnDep" class="mock-btn">💳 Deposit</div>
+        </div>
+        <div class="btn-row">
+          <div id="prevBtnCode" class="mock-btn">🛡️ Get Code</div>
+          <div id="prevBtnSup" class="mock-btn">🎧 Support</div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- কাস্টমাইজেশন ফর্ম -->
+  <!-- বাটন এবং মেসেজ কাস্টমাইজার -->
   <div class="card">
-    <div class="card-title">⚙️ বটের টেক্সট ও কাস্টম Emoji কনফিগ</div>
+    <div class="card-title">⚙️ বাটন টেক্সট ও পজিশন কন্ট্রোল</div>
 
-    <label>শপের নাম / Bot Brand Name:</label>
-    <input type="text" id="shopTitle" value="Your Proxy & VPN" oninput="updatePreview()">
+    <label>শপের নাম / Bot Branding</label>
+    <input type="text" id="shopName" value="Your Proxy & VPN" oninput="updatePreview()">
 
-    <label>টেলিগ্রাম প্রিমিয়াম Custom Emoji ID (যদি থাকে):</label>
-    <input type="text" id="emojiId" placeholder="উদাহরণ: 5368324170671202286">
+    <label>কাস্টম ইমোজি আইডি (Telegram Premium Custom Emoji ID)</label>
+    <input type="text" id="customEmojiId" placeholder="উদাহরণ: 5368324170671202286">
 
-    <label>সাপোর্ট ইউজারনেম (বিনা @ চিহ্নে):</label>
-    <input type="text" id="supportUser" placeholder="siamsikder">
+    <label>স্বাগতম মেসেজ (Welcome Header)</label>
+    <textarea id="welcomeText" rows="2" placeholder="স্বাগতম আমাদের স্টোরে! নিচে ক্লিক করুন:"></textarea>
 
-    <label>বটের স্বাগতম মেসেজ (HTML ফরম্যাট):</label>
-    <textarea id="welcomeText" rows="3" placeholder="স্বাগতম আমাদের শপে! নিচে ক্লিক করে প্রোডাক্ট পছন্দ করুন।"></textarea>
+    <div style="margin-top: 14px; border-top: 1px solid var(--border); padding-top: 10px;">
+      <label>১ম বাটন (ফুল রো - Buy Button)</label>
+      <input type="text" id="btnBuy" value="🎉 Buy Product" oninput="updatePreview()">
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div>
+          <label>২য় বাটন (বাঁশে)</label>
+          <input type="text" id="btnProfile" value="👤 My Profile" oninput="updatePreview()">
+        </div>
+        <div>
+          <label>৩য় বাটন (ডানে)</label>
+          <input type="text" id="btnDeposit" value="💳 Deposit" oninput="updatePreview()">
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div>
+          <label>৪র্থ বাটন (বাঁশে)</label>
+          <input type="text" id="btnCode" value="🛡️ Get Code" oninput="updatePreview()">
+        </div>
+        <div>
+          <label>৫ম বাটন (ডানে)</label>
+          <input type="text" id="btnSupport" value="🎧 Support" oninput="updatePreview()">
+        </div>
+      </div>
+    </div>
 
     <button onclick="saveBotUi()">বটের UI সেভ ও লাইভ আপডেট করুন</button>
     <div id="statusMsg" class="status-msg"></div>
