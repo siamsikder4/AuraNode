@@ -1,4 +1,5 @@
 import os
+import json
 import asyncio
 from datetime import datetime
 from fastapi import FastAPI, Request
@@ -8,10 +9,20 @@ from firebase_admin import credentials, firestore
 
 app = FastAPI()
 
-# ১. Firebase ইনিশিয়ালাইজেশন
+# Firebase ইনিশিয়ালাইজেশন (এনভায়রনমেন্ট ভেরিয়েবল বা ফাইল থেকে)
 if not firebase_admin._apps:
-    # Firebase Console থেকে ডাউনলোড করা Service Account কী
-    cred = credentials.Certificate("firebase_key.json")
+    firebase_json_env = os.getenv("FIREBASE_KEY_JSON")
+    
+    if firebase_json_env:
+        # Render Environment Variable থেকে সরাসরি লোড
+        key_dict = json.loads(firebase_json_env)
+        cred = credentials.Certificate(key_dict)
+    elif os.path.exists("firebase_key.json"):
+        # যদি রিপোজিটরিতে ফাইল থাকে
+        cred = credentials.Certificate("firebase_key.json")
+    else:
+        raise FileNotFoundError("Firebase credentials not found! Set FIREBASE_KEY_JSON in Render environment.")
+        
     firebase_admin.initialize_app(cred)
 
 db = firestore.client()
@@ -27,7 +38,6 @@ async def sync_telegram_webhook(token: str):
         await client.get(f"https://api.telegram.org/bot{token}/setWebhook?url={webhook_url}")
     print(f"[*] Telegram Webhook Active: {token[:10]}...")
 
-# Firebase থেকে ড্যাশবোর্ডে দেওয়া টোকেন স্বয়ংক্রিয়ভাবে লোড
 def listen_to_token_changes():
     def on_snapshot(doc_snapshot, changes, read_time):
         for doc in doc_snapshot:
@@ -69,7 +79,6 @@ async def telegram_webhook(request: Request):
 
     update = await request.json()
 
-    # /start মেসেজ হ্যান্ডলার (বাটন মেনু দেখাবে)
     if "message" in update:
         msg = update["message"]
         chat_id = msg.get("chat", {}).get("id")
@@ -104,7 +113,6 @@ async def telegram_webhook(request: Request):
                 "reply_markup": keyboard
             })
 
-    # বাটন ক্লিক হ্যান্ডলার (ইনস্ট্যান্ট ডেলিভারি)
     elif "callback_query" in update:
         cq = update["callback_query"]
         cb_id = cq.get("id")
