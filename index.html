@@ -1,42 +1,219 @@
-<!-- index.html-এর ভেতর এই কার্ডটি যোগ করুন -->
-<div class="card" style="margin-top: 20px;">
-  <div class="card-title">👥 সাম্প্রতিক কাস্টমার ও অর্ডার লিস্ট</div>
-  <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px;">
-    <thead>
-      <tr style="border-bottom: 1px solid #334155; color: #9ca3af; text-align: left;">
-        <th style="padding: 8px;">কাস্টমার</th>
-        <th style="padding: 8px;">ইউজারনেম</th>
-        <th style="padding: 8px;">প্রোডাক্ট</th>
-        <th style="padding: 8px;">ডেলিভারি ডাটা</th>
-      </tr>
-    </thead>
-    <tbody id="ordersTableBody">
-      <!-- Firebase থেকে স্বয়ংক্রিয়ভাবে ডাটা লোড হবে -->
-    </tbody>
-  </table>
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AuraNode - Cloud Bot & Inventory Manager</title>
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: #111827;
+      --border: #1f2937;
+      --accent: #38bdf8;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --success: #22c55e;
+      --danger: #ef4444;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding: 24px 16px; display: flex; justify-content: center; }
+    .container { width: 100%; max-width: 600px; display: flex; flex-direction: column; gap: 20px; }
+    .header { text-align: center; margin-bottom: 10px; }
+    .header h1 { font-size: 24px; color: var(--accent); }
+    .header p { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
+    .card-title { font-size: 16px; font-weight: 600; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
+    label { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 6px; }
+    input, select, textarea {
+      width: 100%; padding: 12px; background: #070b14; border: 1px solid var(--border);
+      border-radius: 8px; color: #fff; font-size: 14px; margin-bottom: 14px;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--accent); outline: none; }
+    button {
+      width: 100%; padding: 12px; background: #0284c7; color: white; border: none;
+      border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.2s;
+    }
+    button:hover { background: #0369a1; }
+    .badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .badge-off { background: rgba(239, 68, 68, 0.15); color: var(--danger); border: 1px solid var(--danger); }
+    .badge-on { background: rgba(34, 197, 94, 0.15); color: var(--success); border: 1px solid var(--success); }
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+    .stat-card { background: #070b14; border: 1px solid var(--border); border-radius: 8px; padding: 14px; text-align: center; }
+    .stat-number { font-size: 22px; font-weight: bold; color: var(--accent); margin-top: 4px; }
+    .status-text { font-size: 13px; text-align: center; margin-top: 10px; min-height: 18px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
+    th { padding: 8px; color: var(--text-muted); text-align: left; border-bottom: 1px solid var(--border); }
+    td { padding: 10px 8px; border-bottom: 1px solid #1f2937; }
+  </style>
+
+  <!-- Firebase Scripts -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+    import { getFirestore, doc, setDoc, onSnapshot, collection, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+
+    // আপনার Firebase কনসোল থেকে প্রাপ্ত কনফিগ বসান
+    const firebaseConfig = {
+      apiKey: "AIzaSyDummyKey",
+      authDomain: "your-project.firebaseapp.com",
+      projectId: "your-project",
+      storageBucket: "your-project.appspot.com",
+      messagingSenderId: "123456789",
+      appId: "1:123456789:web:dummy"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // ১. বট স্ট্যাটাস ট্র্যাক
+    onSnapshot(doc(db, "bot_config", "main"), (docSnap) => {
+      const badge = document.getElementById("botStatusBadge");
+      const botStatusText = document.getElementById("botStatusText");
+      if (docSnap.exists() && docSnap.data().token) {
+        badge.className = "badge badge-on";
+        badge.innerText = "Active";
+        botStatusText.innerText = "বট সক্রিয় ও ক্লাউডে কানেক্টেড আছে!";
+        botStatusText.style.color = "var(--success)";
+      } else {
+        badge.className = "badge badge-off";
+        badge.innerText = "Offline";
+        botStatusText.innerText = "কোনো সক্রিয় বট টোকেন নেই।";
+        botStatusText.style.color = "var(--danger)";
+      }
+    });
+
+    // ২. স্টক কাউন্টার ট্র্যাক
+    onSnapshot(doc(db, "inventory", "stock"), (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        document.getElementById("vpnCount").innerText = (data.vpn || []).length;
+        document.getElementById("proxyCount").innerText = (data.proxy || []).length;
+      }
+    });
+
+    // ৩. কাস্টমারদের অর্ডার ট্র্যাক
+    const q = query(collection(db, "orders"), orderBy("timestamp", "desc"), limit(10));
+    onSnapshot(q, (snapshot) => {
+      const tbody = document.getElementById("ordersTableBody");
+      tbody.innerHTML = "";
+      if (snapshot.empty) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color: var(--text-muted); padding: 15px;">এখনও কোনো কাস্টমার অর্ডার দেয়নি</td></tr>`;
+        return;
+      }
+      snapshot.forEach((doc) => {
+        const order = doc.data();
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${order.first_name || 'Anonymous'}</td>
+          <td style="color: #38bdf8;">@${order.username || 'N/A'}</td>
+          <td><b>${order.product}</b></td>
+          <td style="font-family: monospace; color: #22c55e;">${order.delivered_credential}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    });
+
+    // বট টোকেন সেভ ফাংশন
+    window.saveBotToken = async function() {
+      const token = document.getElementById("botToken").value.trim();
+      const statusText = document.getElementById("botStatusText");
+      if (!token) return alert("টোকেন ইনপুট দিন!");
+
+      statusText.innerText = "সেভ হচ্ছে...";
+      try {
+        await setDoc(doc(db, "bot_config", "main"), { token: token, updatedAt: new Date() }, { merge: true });
+        statusText.innerText = "টোকেন সফলভাবে ক্লাউডে সেভ হয়েছে!";
+        document.getElementById("botToken").value = "";
+      } catch (e) {
+        statusText.innerText = "সমস্যা: " + e.message;
+      }
+    };
+
+    // স্টক যোগ করার ফাংশন
+    window.saveStock = async function() {
+      const cat = document.getElementById("stockCat").value;
+      const rawText = document.getElementById("stockData").value.trim();
+      const statusText = document.getElementById("stockStatusText");
+      if (!rawText) return alert("স্টক ডাটা দিন!");
+
+      const newItems = rawText.split("\n").map(i => i.trim()).filter(i => i.length > 0);
+      statusText.innerText = "আপডেট হচ্ছে...";
+
+      try {
+        await setDoc(doc(db, "inventory", "stock"), { [cat]: newItems }, { merge: true });
+        statusText.innerText = `${newItems.length}টি আইটেম স্টকে যোগ করা হয়েছে!`;
+        document.getElementById("stockData").value = "";
+      } catch (e) {
+        statusText.innerText = "সমস্যা: " + e.message;
+      }
+    };
+  </script>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>⚡ AuraNode Bot Console</h1>
+    <p>অ্যাডমিন প্যানেল ও লাইভ কাস্টমার ডেলিভারি ট্র্যাকার</p>
+  </div>
+
+  <!-- ১. বট ম্যানেজার -->
+  <div class="card">
+    <div class="card-title">
+      <span>টেলিগ্রাম বট ম্যানেজার</span>
+      <span id="botStatusBadge" class="badge badge-off">Offline</span>
+    </div>
+    <label>Bot Token:</label>
+    <input type="text" id="botToken" placeholder="BotFather থেকে নেওয়া টোকেন বসান">
+    <button onclick="saveBotToken()">টোকেন সেভ ও চালু করুন</button>
+    <div id="botStatusText" class="status-text"></div>
+  </div>
+
+  <!-- ২. স্টক ইনভেন্টরি -->
+  <div class="card">
+    <div class="card-title">স্টক ম্যানেজমেন্ট</div>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <label>VPN স্টক</label>
+        <div id="vpnCount" class="stat-number">0</div>
+      </div>
+      <div class="stat-card">
+        <label>Proxy স্টক</label>
+        <div id="proxyCount" class="stat-number">0</div>
+      </div>
+    </div>
+
+    <label>ক্যাটাগরি:</label>
+    <select id="stockCat">
+      <option value="vpn">VPN Credentials (WireGuard/Configs)</option>
+      <option value="proxy">Residential Proxy (IP:Port:User:Pass)</option>
+    </select>
+
+    <label>ডাটা লিস্ট (প্রতি লাইনে একটি করে):</label>
+    <textarea id="stockData" rows="3" placeholder="key-sample-1&#10;key-sample-2"></textarea>
+    <button onclick="saveStock()">স্টকে সেভ করুন</button>
+    <div id="stockStatusText" class="status-text"></div>
+  </div>
+
+  <!-- ৩. কাস্টমার ও অর্ডার লিস্ট -->
+  <div class="card">
+    <div class="card-title">👥 সাম্প্রতিক কাস্টমার ও ডেলিভারি লিস্ট</div>
+    <div style="overflow-x: auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>কাস্টমার</th>
+            <th>ইউজারনেম</th>
+            <th>প্রোডাক্ট</th>
+            <th>ডেলিভারি কী</th>
+          </tr>
+        </thead>
+        <tbody id="ordersTableBody">
+          <tr><td colspan="4" style="text-align:center; color: var(--text-muted); padding: 15px;">ডাটা লোড হচ্ছে...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>
 
-<script type="module">
-  // কাস্টমার অর্ডার লাইভ শোনার ফাংশন
-  import { getFirestore, collection, query, orderBy, limit, onSnapshot } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
-
-  const db = getFirestore();
-  const q = query(collection(db, "orders"), orderBy("timestamp", "desc"), limit(10));
-
-  onSnapshot(q, (snapshot) => {
-    const tbody = document.getElementById("ordersTableBody");
-    tbody.innerHTML = "";
-    snapshot.forEach((doc) => {
-      const order = doc.data();
-      const tr = document.createElement("tr");
-      tr.style.borderBottom = "1px solid #1f2937";
-      tr.innerHTML = `
-        <td style="padding: 8px;">${order.first_name || 'Anonymous'}</td>
-        <td style="padding: 8px; color: #38bdf8;">@${order.username || 'N/A'}</td>
-        <td style="padding: 8px;"><b>${order.product}</b></td>
-        <td style="padding: 8px; font-family: monospace; color: #22c55e;">${order.delivered_credential}</td>
-      `;
-      tbody.appendChild(tr);
-    });
-  });
-</script>
+</body>
+</html>
