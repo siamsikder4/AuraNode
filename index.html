@@ -2,280 +2,301 @@
 <html lang="bn">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sedap. - E-Commerce Store & Bot Admin</title>
-  
-  <!-- ফন্ট ও আইকন -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Sedap. Mobile Admin</title>
+
+  <!-- Google Fonts & Font Awesome -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
-  <!-- চার্ট লাইব্রেরি -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
   <style>
     :root {
-      --bg: #f4f6fa;
+      --bg: #f8fafc;
       --card-bg: #ffffff;
       --primary: #00b074;
       --primary-light: #e6f7f1;
-      --text-dark: #2d3748;
-      --text-muted: #a0aec0;
-      --border: #edf2f7;
-      --danger: #ff5b5b;
-      --blue: #2d9cdb;
-      --orange: #f2994a;
+      --text-dark: #1e293b;
+      --text-muted: #94a3b8;
+      --border: #f1f5f9;
+      --blue: #0284c7;
+      --orange: #f97316;
+      --red: #ef4444;
       --radius: 16px;
-      --shadow: 0 8px 24px rgba(149, 157, 165, 0.08);
+      --shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
     }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
-    body { background-color: var(--bg); color: var(--text-dark); display: flex; min-height: 100vh; overflow-x: hidden; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
 
-    /* --- ১. সাইডবার স্টাইলিং --- */
-    .sidebar {
-      width: 260px;
-      background: var(--card-bg);
-      border-right: 1px solid var(--border);
+    body {
+      background-color: var(--bg);
+      color: var(--text-dark);
+      padding: 16px;
+      padding-bottom: 90px; /* Bottom Nav-এর জন্য জায়গা */
+      display: flex;
+      justify-content: center;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 480px; /* মোবাইলের উপযুক্ত মাপ */
       display: flex;
       flex-direction: column;
-      padding: 30px 20px;
-      position: fixed;
-      height: 100vh;
-      left: 0;
-      top: 0;
-      z-index: 100;
+      gap: 16px;
     }
 
-    .brand {
-      display: flex;
-      flex-direction: column;
-      margin-bottom: 35px;
-      padding-left: 10px;
-    }
-
-    .brand h2 { font-size: 28px; font-weight: 800; color: var(--text-dark); letter-spacing: -0.5px; }
-    .brand h2 span { color: var(--primary); }
-    .brand p { font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; margin-top: 2px; }
-
-    .menu-list { list-style: none; display: flex; flex-direction: column; gap: 8px; flex: 1; }
-    .menu-item a {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      padding: 12px 18px;
-      color: var(--text-muted);
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: 600;
-      border-radius: 12px;
-      transition: all 0.2s ease;
-    }
-
-    .menu-item a:hover, .menu-item.active a {
-      color: var(--primary);
-      background: var(--primary-light);
-    }
-    .menu-item a i { font-size: 18px; width: 20px; }
-
-    .sidebar-banner {
-      background: linear-gradient(135deg, var(--primary) 0%, #009661 100%);
-      color: #fff;
-      padding: 18px;
-      border-radius: var(--radius);
-      text-align: center;
-    }
-    .sidebar-banner p { font-size: 12px; margin-bottom: 12px; opacity: 0.9; }
-    .sidebar-banner button {
-      background: #fff; color: var(--primary); border: none; padding: 8px 16px; border-radius: 8px;
-      font-weight: 700; font-size: 12px; cursor: pointer;
-    }
-
-    /* --- ২. মেইন কনটেন্ট ও হেডার --- */
-    .main-content {
-      margin-left: 260px;
-      flex: 1;
-      padding: 30px 40px;
-      display: flex;
-      flex-direction: column;
-      gap: 28px;
-    }
-
-    .top-header {
+    /* --- ১. মোবাইল হেডার --- */
+    .mobile-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      padding: 4px 2px;
     }
 
-    .search-bar {
-      position: relative;
-      width: 400px;
+    .brand-title h2 {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
     }
-    .search-bar input {
-      width: 100%;
-      padding: 12px 20px 12px 45px;
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      outline: none;
-      font-size: 14px;
-      box-shadow: var(--shadow);
+
+    .brand-title h2 span {
+      color: var(--primary);
     }
-    .search-bar i {
-      position: absolute;
-      left: 18px;
-      top: 50%;
-      transform: translateY(-50%);
+
+    .brand-title p {
+      font-size: 11px;
       color: var(--text-muted);
+      font-weight: 600;
     }
 
-    .header-actions {
+    .header-profile {
       display: flex;
       align-items: center;
-      gap: 20px;
+      gap: 10px;
     }
 
-    .icon-badge {
-      position: relative;
-      background: var(--card-bg);
-      width: 44px;
-      height: 44px;
+    .header-profile img {
+      width: 38px;
+      height: 38px;
       border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--blue);
+      object-fit: cover;
+      border: 2px solid #ffffff;
       box-shadow: var(--shadow);
-      cursor: pointer;
-    }
-    .icon-badge span {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      width: 8px;
-      height: 8px;
-      background: var(--danger);
-      border-radius: 50%;
     }
 
-    .user-profile {
+    /* --- ২. কুইক মেট্রিক গ্রিড --- */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .m-card {
+      background: var(--card-bg);
+      padding: 14px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
       display: flex;
       align-items: center;
       gap: 12px;
-      padding-left: 10px;
-      border-left: 1px solid var(--border);
-    }
-    .user-profile img { width: 44px; height: 44px; border-radius: 12px; object-fit: cover; }
-    .user-profile .u-info h4 { font-size: 14px; font-weight: 700; }
-    .user-profile .u-info p { font-size: 12px; color: var(--text-muted); }
-
-    /* --- ৩. মেট্রিক কার্ডস (KPI) --- */
-    .metrics-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 24px;
-    }
-
-    .metric-card {
-      background: var(--card-bg);
-      padding: 24px;
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      display: flex;
-      align-items: center;
-      gap: 20px;
+      border: 1px solid var(--border);
     }
 
     .m-icon {
-      width: 56px;
-      height: 56px;
-      border-radius: 16px;
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 24px;
-    }
-    .m-green { background: #e6f7f1; color: var(--primary); }
-    .m-blue { background: #e9f5fb; color: var(--blue); }
-    .m-orange { background: #fef5ec; color: var(--orange); }
-    .m-red { background: #ffebeb; color: var(--danger); }
-
-    .m-data h3 { font-size: 26px; font-weight: 800; }
-    .m-data p { font-size: 13px; color: var(--text-muted); font-weight: 600; margin-top: 2px; }
-
-    /* --- ৪. চার্ট এবং কন্ট্রোল প্যানেল গ্রিড --- */
-    .dashboard-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 24px;
+      font-size: 16px;
     }
 
-    .dash-card {
+    .ic-green { background: #e6f7f1; color: var(--primary); }
+    .ic-blue { background: #e0f2fe; color: var(--blue); }
+    .ic-orange { background: #ffedd5; color: var(--orange); }
+    .ic-red { background: #fee2e2; color: var(--red); }
+
+    .m-info h3 {
+      font-size: 18px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+
+    .m-info p {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    /* --- ৩. মোবাইল কার্ড কনটেইনার --- */
+    .card {
       background: var(--card-bg);
-      padding: 24px;
       border-radius: var(--radius);
+      padding: 18px;
       box-shadow: var(--shadow);
+      border: 1px solid var(--border);
     }
 
-    .card-head {
+    .card-title {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 14px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
-    }
-    .card-head h3 { font-size: 17px; font-weight: 700; }
-    .card-head select, .card-head button {
-      padding: 6px 14px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      background: #fff;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-muted);
-      cursor: pointer;
     }
 
-    /* কন্ট্রোল ফর্ম ফিল্ডস */
-    .field-group { margin-bottom: 14px; }
-    .field-group label { display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; }
-    .field-group input, .field-group select, .field-group textarea {
+    .card-title .badge {
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-weight: 700;
+    }
+
+    .badge-live {
+      background: #e6f7f1;
+      color: var(--primary);
+    }
+
+    /* ফর্ম ইনপুট */
+    label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    input, select, textarea {
       width: 100%;
-      padding: 12px 16px;
+      padding: 12px 14px;
       background: #f8fafc;
       border: 1px solid var(--border);
       border-radius: 12px;
-      font-size: 14px;
+      font-size: 13px;
+      font-weight: 500;
       outline: none;
-      transition: 0.2s;
+      margin-bottom: 12px;
+      color: var(--text-dark);
+      transition: all 0.2s;
     }
-    .field-group input:focus, .field-group textarea:focus { border-color: var(--primary); background: #fff; }
 
-    .btn-submit {
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--primary);
+      background: #ffffff;
+    }
+
+    .btn-action {
       width: 100%;
       padding: 12px;
       background: var(--primary);
-      color: #fff;
+      color: #ffffff;
       border: none;
       border-radius: 12px;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 700;
       cursor: pointer;
-      box-shadow: 0 4px 12px rgba(0, 176, 116, 0.25);
-      transition: 0.2s;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 12px rgba(0, 176, 116, 0.2);
     }
-    .btn-submit:hover { opacity: 0.9; transform: translateY(-1px); }
 
-    /* --- ৫. টেবিল স্টাইলিং --- */
-    .table-container { overflow-x: auto; margin-top: 10px; }
-    table { width: 100%; border-collapse: collapse; text-align: left; }
-    th { padding: 14px 16px; color: var(--text-muted); font-size: 12px; font-weight: 700; text-transform: uppercase; border-bottom: 1px solid var(--border); }
-    td { padding: 14px 16px; font-size: 13px; font-weight: 600; border-bottom: 1px solid var(--border); }
-    tr:last-child td { border-bottom: none; }
-    .badge-status { padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; }
-    .bs-success { background: #e6f7f1; color: var(--primary); }
+    .btn-action:active {
+      transform: scale(0.98);
+    }
+
+    /* --- ৪. মোবাইল অর্ডার লিস্ট আইটেম --- */
+    .order-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .order-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      background: #f8fafc;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+
+    .order-left h4 {
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .order-left p {
+      font-size: 11px;
+      color: var(--blue);
+      margin-top: 2px;
+    }
+
+    .order-right {
+      text-align: right;
+    }
+
+    .order-product {
+      font-size: 11px;
+      font-weight: 700;
+      background: #ffffff;
+      padding: 3px 8px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      display: inline-block;
+    }
+
+    /* --- ৫. বটম মোবাইল অ্যাপ বার --- */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #ffffff;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0;
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
+      z-index: 1000;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 10px;
+      font-weight: 700;
+      transition: all 0.2s;
+    }
+
+    .nav-item i {
+      font-size: 18px;
+    }
+
+    .nav-item.active {
+      color: var(--primary);
+    }
   </style>
 
+  <!-- Firebase Scripts -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
     import { getFirestore, doc, setDoc, onSnapshot, collection, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
@@ -292,78 +313,63 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // ১. স্টক রিয়েলটাইম লোড ও চার্ট আপডেট
-    let stockPieChart;
-    function initChart(vpn, proxy) {
-      const ctx = document.getElementById('inventoryChart').getContext('2d');
-      if (stockPieChart) stockPieChart.destroy();
-      stockPieChart = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-          labels: ['VPN Stock', 'Proxy Stock'],
-          datasets: [{
-            data: [vpn, proxy],
-            backgroundColor: ['#00b074', '#2d9cdb'],
-            borderWidth: 0
-          }]
-        },
-        options: { cutout: '75%', plugins: { legend: { position: 'bottom' } } }
-      });
-    }
-
+    // ১. লাইভ স্টক সংখ্যা ট্র্যাক
     onSnapshot(doc(db, "inventory", "stock"), (docSnap) => {
       const vpn = (docSnap.exists() && docSnap.data().vpn) ? docSnap.data().vpn.length : 0;
       const proxy = (docSnap.exists() && docSnap.data().proxy) ? docSnap.data().proxy.length : 0;
-      document.getElementById('statStockCount').innerText = vpn + proxy;
-      initChart(vpn, proxy);
+      document.getElementById('statStock').innerText = vpn + proxy;
     });
 
-    // ২. কাস্টমার সংখ্যা ট্র্যাকিং
+    // ২. কাস্টমার সংখ্যা ট্র্যাক
     onSnapshot(collection(db, "users"), (snap) => {
-      document.getElementById('statCustomerCount').innerText = snap.size;
+      document.getElementById('statUsers').innerText = snap.size;
     });
 
-    // ৩. অর্ডার ও রেভিনিউ ট্র্যাকিং
-    const qOrders = query(collection(db, "orders"), orderBy("timestamp", "desc"), limit(10));
+    // ৩. রিয়েলটাইম অর্ডার ও রেভিনিউ ট্র্যাক
+    const qOrders = query(collection(db, "orders"), orderBy("timestamp", "desc"), limit(6));
     onSnapshot(qOrders, (snapshot) => {
-      document.getElementById('statOrderCount').innerText = snapshot.size;
-      const tbody = document.getElementById("orderTableBody");
-      tbody.innerHTML = "";
-      let rev = 0;
+      document.getElementById('statOrders').innerText = snapshot.size;
+      document.getElementById('statRevenue').innerText = `${snapshot.size * 20} ৳`;
 
-      if(snapshot.empty) {
-        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color: var(--text-muted); padding: 20px;">কোনো অর্ডার পাওয়া যায়নি</td></tr>`;
+      const list = document.getElementById("orderList");
+      list.innerHTML = "";
+
+      if (snapshot.empty) {
+        list.innerHTML = `<div style="text-align:center; padding: 15px; color: var(--text-muted); font-size: 12px;">এখনও কোনো অর্ডার আসেনি</div>`;
+        return;
       }
 
       snapshot.forEach(doc => {
         const o = doc.data();
-        rev += 20; // এস্টিমেট
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${o.first_name || 'Customer'}</td>
-          <td style="color: var(--blue);">@${o.username || 'None'}</td>
-          <td><b>${o.product}</b></td>
-          <td><span class="badge-status bs-success">Delivered</span></td>
+        const div = document.createElement("div");
+        div.className = "order-item";
+        div.innerHTML = `
+          <div class="order-left">
+            <h4>${o.first_name || 'Customer'}</h4>
+            <p>@${o.username || 'N/A'}</p>
+          </div>
+          <div class="order-right">
+            <span class="order-product">${o.product}</span>
+          </div>
         `;
-        tbody.appendChild(tr);
+        list.appendChild(div);
       });
-      document.getElementById('statRevenue').innerText = `${rev} ৳`;
     });
 
-    // ৪. টোকেন সেভ
+    // ৪. বটের টোকেন সেভ
     window.saveBotToken = async function() {
       const token = document.getElementById("botToken").value.trim();
-      if (!token) return alert("টোকেন দিন!");
+      if (!token) return alert("টোকেন ইনপুট দিন!");
       await setDoc(doc(db, "bot_config", "main"), { token, updatedAt: new Date() }, { merge: true });
-      alert("বট টোকেন ক্লাউডে সেভ হয়েছে!");
+      alert("বট টোকেন কানেক্ট হয়েছে!");
       document.getElementById("botToken").value = "";
     };
 
-    // ৫. স্টক যোগ
+    // ৫. স্টক যোগ করা
     window.saveStock = async function() {
       const cat = document.getElementById("stockCat").value;
       const raw = document.getElementById("stockData").value.trim();
-      if (!raw) return alert("ডাটা ইনপুট দিন!");
+      if (!raw) return alert("স্টক ডাটা দিন!");
       const items = raw.split("\n").map(i => i.trim()).filter(i => i.length > 0);
       await setDoc(doc(db, "inventory", "stock"), { [cat]: items }, { merge: true });
       alert(`${items.length}টি আইটেম স্টকে যুক্ত হয়েছে!`);
@@ -373,156 +379,100 @@
 </head>
 <body>
 
-  <!-- ১. সাইডবার মেনু -->
-  <aside class="sidebar">
-    <div class="brand">
-      <h2>Sedap<span>.</span></h2>
-      <p>Modern Admin Dashboard</p>
-    </div>
+  <div class="app-container">
 
-    <ul class="menu-list">
-      <li class="menu-item active"><a href="index.html"><i class="fa-solid fa-house"></i> Dashboard</a></li>
-      <li class="menu-item"><a href="customers.html"><i class="fa-solid fa-user-group"></i> Customer</a></li>
-      <li class="menu-item"><a href="bot-ui.html"><i class="fa-solid fa-palette"></i> Bot UI</a></li>
-      <li class="menu-item"><a href="#stock"><i class="fa-solid fa-box"></i> Inventory</a></li>
-      <li class="menu-item"><a href="#settings"><i class="fa-solid fa-gear"></i> Settings</a></li>
-    </ul>
-
-    <div class="sidebar-banner">
-      <p>Need custom bot integrations?</p>
-      <button onclick="location.href='bot-ui.html'">Configure UI</button>
-    </div>
-  </aside>
-
-  <!-- ২. মেইন ড্যাশবোর্ড স্ক্রিন -->
-  <main class="main-content">
-    
-    <!-- টপ হেডার -->
-    <header class="top-header">
-      <div class="search-bar">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <input type="text" placeholder="Search orders, customers, products...">
+    <!-- হেডার -->
+    <header class="mobile-header">
+      <div class="brand-title">
+        <h2>Sedap<span>.</span></h2>
+        <p>Mobile Store Console</p>
       </div>
-
-      <div class="header-actions">
-        <div class="icon-badge"><i class="fa-solid fa-bell"></i><span></span></div>
-        <div class="icon-badge" onclick="location.href='bot-ui.html'"><i class="fa-solid fa-robot"></i></div>
-
-        <div class="user-profile">
-          <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100" alt="Avatar">
-          <div class="u-info">
-            <h4>Siam Sikder</h4>
-            <p>Super Admin</p>
-          </div>
-        </div>
+      <div class="header-profile">
+        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100" alt="Admin">
       </div>
     </header>
 
-    <!-- ৩. মেট্রিক্স কার্ড গ্রিড -->
-    <section class="metrics-grid">
-      <div class="metric-card">
-        <div class="m-icon m-green"><i class="fa-solid fa-cart-shopping"></i></div>
-        <div class="m-data">
-          <h3 id="statOrderCount">0</h3>
-          <p>Total Orders</p>
+    <!-- মেট্রিক কার্ডস -->
+    <div class="metrics-grid">
+      <div class="m-card">
+        <div class="m-icon ic-green"><i class="fa-solid fa-cart-shopping"></i></div>
+        <div class="m-info">
+          <h3 id="statOrders">0</h3>
+          <p>Orders</p>
         </div>
       </div>
-
-      <div class="metric-card">
-        <div class="m-icon m-blue"><i class="fa-solid fa-cube"></i></div>
-        <div class="m-data">
-          <h3 id="statStockCount">0</h3>
-          <p>Available Stock</p>
+      <div class="m-card">
+        <div class="m-icon ic-blue"><i class="fa-solid fa-cube"></i></div>
+        <div class="m-info">
+          <h3 id="statStock">0</h3>
+          <p>Stock</p>
         </div>
       </div>
-
-      <div class="metric-card">
-        <div class="m-icon m-orange"><i class="fa-solid fa-users"></i></div>
-        <div class="m-data">
-          <h3 id="statCustomerCount">0</h3>
-          <p>Total Customers</p>
+      <div class="m-card">
+        <div class="m-icon ic-orange"><i class="fa-solid fa-users"></i></div>
+        <div class="m-info">
+          <h3 id="statUsers">0</h3>
+          <p>Users</p>
         </div>
       </div>
-
-      <div class="metric-card">
-        <div class="m-icon m-red"><i class="fa-solid fa-wallet"></i></div>
-        <div class="m-data">
+      <div class="m-card">
+        <div class="m-icon ic-red"><i class="fa-solid fa-wallet"></i></div>
+        <div class="m-info">
           <h3 id="statRevenue">0 ৳</h3>
-          <p>Total Revenue</p>
+          <p>Revenue</p>
         </div>
       </div>
-    </section>
+    </div>
 
-    <!-- ৪. চার্ট এবং কন্ট্রোল প্যানেল গ্রিড -->
-    <section class="dashboard-grid">
-      
-      <!-- স্টক ডোনাট চার্ট -->
-      <div class="dash-card">
-        <div class="card-head">
-          <h3>Stock Distribution</h3>
-          <select><option>Realtime</option></select>
-        </div>
-        <div style="height: 230px; display: flex; justify-content: center;">
-          <canvas id="inventoryChart"></canvas>
-        </div>
+    <!-- স্টক আপডেট কার্ড -->
+    <div class="card">
+      <div class="card-title">
+        <span>স্টক ইনভেন্টরি</span>
+        <span class="badge badge-live">Live</span>
       </div>
+      <label>ক্যাটাগরি</label>
+      <select id="stockCat">
+        <option value="vpn">WireGuard VPN Key</option>
+        <option value="proxy">Residential Proxy</option>
+      </select>
+      <label>ডাটা লিস্ট (প্রতি লাইনে একটি)</label>
+      <textarea id="stockData" rows="2" placeholder="sample-key-1&#10;sample-key-2"></textarea>
+      <button class="btn-action" onclick="saveStock()"><i class="fa-solid fa-plus"></i> স্টকে সেভ করুন</button>
+    </div>
 
-      <!-- স্টক ইনভেন্টরি ফর্ম -->
-      <div class="dash-card" id="stock">
-        <div class="card-head">
-          <h3>Add Stock Inventory</h3>
-        </div>
-        <div class="field-group">
-          <label>Product Category</label>
-          <select id="stockCat">
-            <option value="vpn">WireGuard VPN Key</option>
-            <option value="proxy">Residential Proxy (IP:Port:User:Pass)</option>
-          </select>
-        </div>
-        <div class="field-group">
-          <label>Raw Stock Items (Per Line)</label>
-          <textarea id="stockData" rows="3" placeholder="item-1&#10;item-2"></textarea>
-        </div>
-        <button class="btn-submit" onclick="saveStock()">Add Stock to Cloud</button>
+    <!-- বট টোকেন কার্ড -->
+    <div class="card">
+      <div class="card-title">টেলিগ্রাম বট ম্যানেজার</div>
+      <label>Bot Token</label>
+      <input type="text" id="botToken" placeholder="BotFather থেকে পাওয়া টোকেন দিন">
+      <button class="btn-action" style="background: var(--blue);" onclick="saveBotToken()"><i class="fa-solid fa-paper-plane"></i> টোকেন কানেক্ট করুন</button>
+    </div>
+
+    <!-- সাম্প্রতিক ডেলিভারি লিস্ট -->
+    <div class="card">
+      <div class="card-title">সাম্প্রতিক অর্ডার লগ</div>
+      <div class="order-list" id="orderList">
+        <div style="text-align:center; padding: 15px; color: var(--text-muted); font-size: 12px;">ডাটা লোড হচ্ছে...</div>
       </div>
+    </div>
 
-      <!-- টেলিগ্রাম বট কানেকশন -->
-      <div class="dash-card">
-        <div class="card-head">
-          <h3>Telegram Bot API</h3>
-        </div>
-        <div class="field-group">
-          <label>Bot Token (BotFather)</label>
-          <input type="text" id="botToken" placeholder="Paste Token from @BotFather">
-        </div>
-        <button class="btn-submit" style="background: var(--blue);" onclick="saveBotToken()">Sync Bot Token</button>
-      </div>
+  </div>
 
-      <!-- সাম্প্রতিক অর্ডার টেবিল -->
-      <div class="dash-card">
-        <div class="card-head">
-          <h3>Recent Customer Deliveries</h3>
-          <button onclick="location.href='customers.html'">View All</button>
-        </div>
-        <div class="table-container">
-          <table>
-            <thead>
-              <tr>
-                <th>Customer</th>
-                <th>Username</th>
-                <th>Product</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody id="orderTableBody">
-              <tr><td colspan="4" style="text-align:center; padding: 20px; color: var(--text-muted);">লোড হচ্ছে...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-    </section>
-  </main>
+  <!-- বটম মোবাইল ন্যাভিগেশন বার -->
+  <nav class="bottom-nav">
+    <a href="index.html" class="nav-item active">
+      <i class="fa-solid fa-house"></i>
+      <span>হোম</span>
+    </a>
+    <a href="customers.html" class="nav-item">
+      <i class="fa-solid fa-user-group"></i>
+      <span>কাস্টমার</span>
+    </a>
+    <a href="bot-ui.html" class="nav-item">
+      <i class="fa-solid fa-palette"></i>
+      <span>বট UI</span>
+    </a>
+  </nav>
 
 </body>
 </html>
