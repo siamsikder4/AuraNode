@@ -8,8 +8,9 @@ from firebase_admin import credentials, firestore
 
 app = FastAPI()
 
-# Firebase ইনিশিয়ালাইজেশন
+# ১. Firebase ইনিশিয়ালাইজেশন
 if not firebase_admin._apps:
+    # Firebase Console থেকে ডাউনলোড করা Service Account কী
     cred = credentials.Certificate("firebase_key.json")
     firebase_admin.initialize_app(cred)
 
@@ -21,12 +22,12 @@ RENDER_APP_URL = os.getenv("RENDER_EXTERNAL_URL", "https://your-service.onrender
 async def sync_telegram_webhook(token: str):
     global CURRENT_TOKEN
     CURRENT_TOKEN = token
-    webhook_url = f"{RENDER_APP_URL}/webhook/telegram"
+    webhook_url = f"{RENDER_APP_URL.rstrip('/')}/webhook/telegram"
     async with httpx.AsyncClient() as client:
         await client.get(f"https://api.telegram.org/bot{token}/setWebhook?url={webhook_url}")
-    print(f"[*] Webhook Connected for token: {token[:10]}...")
+    print(f"[*] Telegram Webhook Active: {token[:10]}...")
 
-# Firebase থেকে ড্যাশবোর্ডে দেওয়া টোকেন রিয়েলটাইম লোড
+# Firebase থেকে ড্যাশবোর্ডে দেওয়া টোকেন স্বয়ংক্রিয়ভাবে লোড
 def listen_to_token_changes():
     def on_snapshot(doc_snapshot, changes, read_time):
         for doc in doc_snapshot:
@@ -43,93 +44,141 @@ async def startup_event():
     loop = asyncio.get_event_loop()
     loop.run_in_executor(None, listen_to_token_changes)
 
-# কাস্টমার ডাটা Firebase-এ সেভ করার ফাংশন
-def save_customer_order(user_info: dict, product_name: str, item_delivered: str):
-    order_data = {
+async def send_tg_api(method: str, payload: dict):
+    if not CURRENT_TOKEN:
+        return
+    url = f"https://api.telegram.org/bot{CURRENT_TOKEN}/{method}"
+    async with httpx.AsyncClient() as client:
+        await client.post(url, json=payload)
+
+def save_order(user_info: dict, product_name: str, delivered_data: str):
+    order = {
         "telegram_id": user_info.get("id"),
         "first_name": user_info.get("first_name", ""),
         "username": user_info.get("username", "None"),
         "product": product_name,
-        "delivered_credential": item_delivered,
+        "delivered_credential": delivered_data,
         "timestamp": datetime.utcnow()
     }
-    # Firebase-এর 'orders' কালেকশনে অটোমেটিক নতুন ডকুমেন্ট তৈরি হবে
-    db.collection("orders").add(order_data)
+    db.collection("orders").add(order)
 
-    # কাস্টমারের প্রোফাইল 'customers' লিস্টেও আপডেট থাকবে
-    customer_ref = db.collection("customers").document(str(user_info.get("id")))
-    customer_ref.set({
-        "telegram_id": user_info.get("id"),
-        "name": user_info.get("first_name", ""),
-        "username": user_info.get("username", "None"),
-        "last_active": datetime.utcnow()
-    }, merge=True)
-
-# টেলিগ্রাম মেসেজ হ্যান্ডলার
 @app.post("/webhook/telegram")
 async def telegram_webhook(request: Request):
     if not CURRENT_TOKEN:
         return {"status": "no_token"}
 
     update = await request.json()
-    message = update.get("message", {})
-    user = message.get("from", {})
-    chat_id = message.get("chat", {}).get("id")
-    text = message.get("text", "")
 
-    if not chat_id or not text:
-        return {"status": "ignored"}
+    # /start মেসেজ হ্যান্ডলার (বাটন মেনু দেখাবে)
+    if "message" in update:
+        msg = update["message"]
+        chat_id = msg.get("chat", {}).get("id")
+        user = msg.get("from", {})
+        text = msg.get("text", "")
 
-    stock_ref = db.collection("inventory").document("stock")
-    stock_doc = stock_ref.get()
-    stock_data = stock_doc.to_dict() if stock_doc.exists else {"vpn": [], "proxy": []}
-
-    reply_text = ""
-
-    # ১. কাস্টমার /start দিলে প্রোফাইল ডাটাবেসে যাবে
-    if text == "/start":
-        db.collection("customers").document(str(user.get("id"))).set({
-            "telegram_id": user.get("id"),
-            "name": user.get("first_name", ""),
-            "username": user.get("username", "None"),
-            "joined_at": datetime.utcnow()
-        }, merge=True)
-        reply_text = f"স্বাগতম {user.get('first_name', '')}!\n\n/buy_vpn - VPN কিনুন\n/buy_proxy - Proxy কিনুন\n/stock - বর্তমান স্টক দেখুন"
-
-    elif text == "/stock":
-        vpn_c = len(stock_data.get("vpn", []))
-        proxy_c = len(stock_data.get("proxy", []))
-        reply_text = f"📦 বর্তমান স্টক অবস্থা:\n🛡️ VPN: {vpn_c} টি\n🌐 Proxy: {proxy_c} টি"
-
-    # ২. কাস্টমার VPN নিলে ডাটা সেভ ও ডেলিভারি
-    elif text == "/buy_vpn":
-        vpn_list = stock_data.get("vpn", [])
-        if vpn_list:
-            item = vpn_list.pop(0)
-            stock_ref.update({"vpn": vpn_list})
-            # Firebase-এ অর্ডারের লগ এবং কাস্টমার ডিটেইলস সেভ
-            save_customer_order(user, "VPN", item)
-            reply_text = f"✅ আপনার VPN কনফিগ কী:\n`{item}`\n\nধন্যবাদ!"
-        else:
-            reply_text = "❌ দুঃখিত! বর্তমানে VPN স্টক শেষ হয়ে গেছে।"
-
-    # ৩. কাস্টমার Proxy নিলে ডাটা সেভ ও ডেলিভারি
-    elif text == "/buy_proxy":
-        proxy_list = stock_data.get("proxy", [])
-        if proxy_list:
-            item = proxy_list.pop(0)
-            stock_ref.update({"proxy": proxy_list})
-            # Firebase-এ অর্ডারের লগ এবং কাস্টমার ডিটেইলস সেভ
-            save_customer_order(user, "Proxy", item)
-            reply_text = f"✅ আপনার Proxy Credentials:\n`{item}`\n\nধন্যবাদ!"
-        else:
-            reply_text = "❌ দুঃখিত! বর্তমানে Proxy স্টক শেষ হয়ে গেছে।"
-
-    if reply_text:
-        async with httpx.AsyncClient() as client:
-            await client.post(
-                f"https://api.telegram.org/bot{CURRENT_TOKEN}/sendMessage",
-                json={"chat_id": chat_id, "text": reply_text, "parse_mode": "Markdown"}
+        if text == "/start":
+            welcome_text = (
+                f"👋 *স্বাগতম, {user.get('first_name', 'User')}!*\n\n"
+                "⚡ *AuraNode Digital Store* - এ আপনাকে স্বাগতম।\n"
+                "এখানে প্রিমিয়াম VPN এবং Residential Proxy পেয়ে যাবেন ইনস্ট্যান্ট ডেলিভারিতে।\n\n"
+                "👇 *নিচের অপশন থেকে সিলেক্ট করুন:*"
             )
 
+            keyboard = {
+                "inline_keyboard": [
+                    [
+                        {"text": "🛡️ Buy VPN (WireGuard)", "callback_data": "buy_vpn"},
+                        {"text": "🌐 Buy Proxy (Elite)", "callback_data": "buy_proxy"}
+                    ],
+                    [
+                        {"text": "📦 স্টক চেক করুন", "callback_data": "check_stock"},
+                        {"text": "💬 সাপোর্ট", "url": "https://t.me/siamsikder"}
+                    ]
+                ]
+            }
+
+            await send_tg_api("sendMessage", {
+                "chat_id": chat_id,
+                "text": welcome_text,
+                "parse_mode": "Markdown",
+                "reply_markup": keyboard
+            })
+
+    # বাটন ক্লিক হ্যান্ডলার (ইনস্ট্যান্ট ডেলিভারি)
+    elif "callback_query" in update:
+        cq = update["callback_query"]
+        cb_id = cq.get("id")
+        chat_id = cq.get("message", {}).get("chat", {}).get("id")
+        user = cq.get("from", {})
+        data = cq.get("data")
+
+        await send_tg_api("answerCallbackQuery", {"callback_query_id": cb_id})
+
+        stock_ref = db.collection("inventory").document("stock")
+        stock_doc = stock_ref.get()
+        stock_data = stock_doc.to_dict() if stock_doc.exists else {"vpn": [], "proxy": []}
+
+        if data == "check_stock":
+            vpn_cnt = len(stock_data.get("vpn", []))
+            proxy_cnt = len(stock_data.get("proxy", []))
+            stock_msg = (
+                "📊 *লাইভ ইনভেন্টরি স্টক স্ট্যাটাস*\n"
+                "━━━━━━━━━━━━━━━━━━━━\n"
+                f"🛡️ *প্রিমিয়াম VPN:* `{vpn_cnt}` টি এভেইলেবল\n"
+                f"🌐 *রেসিডেনশিয়াল Proxy:* `{proxy_cnt}` টি এভেইলেবল\n"
+                "━━━━━━━━━━━━━━━━━━━━"
+            )
+            await send_tg_api("sendMessage", {
+                "chat_id": chat_id,
+                "text": stock_msg,
+                "parse_mode": "Markdown"
+            })
+
+        elif data == "buy_vpn":
+            vpn_list = stock_data.get("vpn", [])
+            if vpn_list:
+                item = vpn_list.pop(0)
+                stock_ref.update({"vpn": vpn_list})
+                save_order(user, "VPN", item)
+
+                delivery_text = (
+                    "🎉 *অর্ডার সফল হয়েছে!*\n\n"
+                    "🛡️ *আপনার VPN কনফিগারেশন কী:*\n"
+                    f"`{item}`\n\n"
+                    "ধন্যবাদ আমাদের সাথে থাকার জন্য!"
+                )
+            else:
+                delivery_text = "❌ দুঃখিত! বর্তমানে সব VPN স্টক শেষ হয়ে গেছে।"
+
+            await send_tg_api("sendMessage", {
+                "chat_id": chat_id,
+                "text": delivery_text,
+                "parse_mode": "Markdown"
+            })
+
+        elif data == "buy_proxy":
+            proxy_list = stock_data.get("proxy", [])
+            if proxy_list:
+                item = proxy_list.pop(0)
+                stock_ref.update({"proxy": proxy_list})
+                save_order(user, "Proxy", item)
+
+                delivery_text = (
+                    "🎉 *অর্ডার সফল হয়েছে!*\n\n"
+                    "🌐 *আপনার প্রক্সি ক্রেডেনশিয়াল (IP:Port:User:Pass):*\n"
+                    f"`{item}`"
+                )
+            else:
+                delivery_text = "❌ দুঃখিত! বর্তমানে সব প্রক্সি স্টক শেষ হয়ে গেছে।"
+
+            await send_tg_api("sendMessage", {
+                "chat_id": chat_id,
+                "text": delivery_text,
+                "parse_mode": "Markdown"
+            })
+
     return {"status": "ok"}
+
+@app.get("/")
+def home():
+    return {"status": "running", "service": "AuraNode Engine"}
