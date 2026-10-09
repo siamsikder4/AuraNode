@@ -16,11 +16,14 @@
       --danger: #ef4444;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background: var(--bg); color: var(--text); padding: 24px 16px; display: flex; justify-content: center; }
-    .container { width: 100%; max-width: 600px; display: flex; flex-direction: column; gap: 20px; }
-    .header { text-align: center; margin-bottom: 10px; }
-    .header h1 { font-size: 24px; color: var(--accent); }
-    .header p { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+    body { background: var(--bg); color: var(--text); padding: 20px 14px; display: flex; justify-content: center; }
+    .container { width: 100%; max-width: 600px; display: flex; flex-direction: column; gap: 16px; }
+    
+    /* Top Navbar */
+    .nav { display: flex; gap: 10px; background: var(--card-bg); padding: 8px; border-radius: 10px; border: 1px solid var(--border); }
+    .nav a { flex: 1; text-align: center; text-decoration: none; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 8px; color: var(--text-muted); }
+    .nav a.active { background: #0284c7; color: #fff; }
+
     .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
     .card-title { font-size: 16px; font-weight: 600; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
     label { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 6px; }
@@ -50,21 +53,18 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
     import { getFirestore, doc, setDoc, onSnapshot, collection, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 
-    // নতুন কনফিগ
     const firebaseConfig = {
       apiKey: "AIzaSyCNhEQkvKdqk3SK-Ot7boIbJl-44b9QJyc",
       authDomain: "auranode-58027.firebaseapp.com",
       projectId: "auranode-58027",
       storageBucket: "auranode-58027.firebasestorage.app",
       messagingSenderId: "846497828511",
-      appId: "1:846497828511:web:da471062e730cde107dcaa",
-      measurementId: "G-SZVCNRVR73"
+      appId: "1:846497828511:web:da471062e730cde107dcaa"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // ১. বট স্ট্যাটাস ট্র্যাক
     onSnapshot(doc(db, "bot_config", "main"), (docSnap) => {
       const badge = document.getElementById("botStatusBadge");
       const botStatusText = document.getElementById("botStatusText");
@@ -81,7 +81,6 @@
       }
     });
 
-    // ২. স্টক কাউন্টার ট্র্যাক
     onSnapshot(doc(db, "inventory", "stock"), (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data();
@@ -90,7 +89,6 @@
       }
     });
 
-    // ৩. কাস্টমার অর্ডার লাইভ ট্র্যাক
     const q = query(collection(db, "orders"), orderBy("timestamp", "desc"), limit(10));
     onSnapshot(q, (snapshot) => {
       const tbody = document.getElementById("ordersTableBody");
@@ -112,12 +110,10 @@
       });
     });
 
-    // বট টোকেন সেভ ফাংশন
     window.saveBotToken = async function() {
       const token = document.getElementById("botToken").value.trim();
       const statusText = document.getElementById("botStatusText");
       if (!token) return alert("টোকেন ইনপুট দিন!");
-
       statusText.innerText = "সেভ হচ্ছে...";
       try {
         await setDoc(doc(db, "bot_config", "main"), { token: token, updatedAt: new Date() }, { merge: true });
@@ -128,16 +124,13 @@
       }
     };
 
-    // স্টক যোগ করার ফাংশন
     window.saveStock = async function() {
       const cat = document.getElementById("stockCat").value;
       const rawText = document.getElementById("stockData").value.trim();
       const statusText = document.getElementById("stockStatusText");
       if (!rawText) return alert("স্টক ডাটা দিন!");
-
       const newItems = rawText.split("\n").map(i => i.trim()).filter(i => i.length > 0);
       statusText.innerText = "আপডেট হচ্ছে...";
-
       try {
         await setDoc(doc(db, "inventory", "stock"), { [cat]: newItems }, { merge: true });
         statusText.innerText = `${newItems.length}টি আইটেম স্টকে যুক্ত হয়েছে!`;
@@ -151,9 +144,10 @@
 <body>
 
 <div class="container">
-  <div class="header">
-    <h1>⚡ AuraNode Bot Console</h1>
-    <p>Firebase Realtime Sync ও অটোমেটেড শপ</p>
+  <!-- Navbar -->
+  <div class="nav">
+    <a href="index.html" class="active">📦 ইনভেন্টরি ও অর্ডার</a>
+    <a href="bot-ui.html">🎨 বটের UI ও বাটন</a>
   </div>
 
   <div class="card">
@@ -162,7 +156,7 @@
       <span id="botStatusBadge" class="badge badge-off">Offline</span>
     </div>
     <label>Bot Token:</label>
-    <input type="text" id="botToken" placeholder="BotFather থেকে পাওয়া টোকেন বসান">
+    <input type="text" id="botToken" placeholder="BotFather থেকে পাওয়া টোকেন">
     <button onclick="saveBotToken()">টোকেন সেভ ও চালু করুন</button>
     <div id="botStatusText" class="status-text"></div>
   </div>
@@ -182,8 +176,8 @@
 
     <label>ক্যাটাগরি:</label>
     <select id="stockCat">
-      <option value="vpn">VPN Credentials (WireGuard/Configs)</option>
-      <option value="proxy">Residential Proxy (IP:Port:User:Pass)</option>
+      <option value="vpn">VPN Credentials</option>
+      <option value="proxy">Residential Proxy</option>
     </select>
 
     <label>ডাটা লিস্ট (প্রতি লাইনে একটি করে):</label>
