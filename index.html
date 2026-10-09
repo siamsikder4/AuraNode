@@ -46,19 +46,19 @@
     td { padding: 10px 8px; border-bottom: 1px solid #1f2937; }
   </style>
 
-  <!-- Firebase Scripts -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
     import { getFirestore, doc, setDoc, onSnapshot, collection, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 
-    // আপনার দেওয়া আসল Firebase কনফিগারেশন
+    // নতুন কনফিগ
     const firebaseConfig = {
-      apiKey: "AIzaSyBYDMMAgFNHRsu7WvYI7vhYuBwoYfc8AyE",
-      authDomain: "clip-well.firebaseapp.com",
-      projectId: "clip-well",
-      storageBucket: "clip-well.firebasestorage.app",
-      messagingSenderId: "203426313347",
-      appId: "1:203426313347:android:2c4c2b08bf31a2b31b57b6"
+      apiKey: "AIzaSyCNhEQkvKdqk3SK-Ot7boIbJl-44b9QJyc",
+      authDomain: "auranode-58027.firebaseapp.com",
+      projectId: "auranode-58027",
+      storageBucket: "auranode-58027.firebasestorage.app",
+      messagingSenderId: "846497828511",
+      appId: "1:846497828511:web:da471062e730cde107dcaa",
+      measurementId: "G-SZVCNRVR73"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -76,12 +76,12 @@
       } else {
         badge.className = "badge badge-off";
         badge.innerText = "Offline";
-        botStatusText.innerText = "কোনো সক্রিয় বট টোকেন পাওয়া যায়নি।";
+        botStatusText.innerText = "কোনো সক্রিয় বট টোকেন নেই।";
         botStatusText.style.color = "var(--danger)";
       }
     });
 
-    // ২. স্টক ট্র্যাক
+    // ২. স্টক কাউন্টার ট্র্যাক
     onSnapshot(doc(db, "inventory", "stock"), (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data();
@@ -90,7 +90,7 @@
       }
     });
 
-    // ৩. কাস্টমার অর্ডার লাইভ আপডেট
+    // ৩. কাস্টমার অর্ডার লাইভ ট্র্যাক
     const q = query(collection(db, "orders"), orderBy("timestamp", "desc"), limit(10));
     onSnapshot(q, (snapshot) => {
       const tbody = document.getElementById("ordersTableBody");
@@ -112,7 +112,7 @@
       });
     });
 
-    // বট টোকেন সেভ
+    // বট টোকেন সেভ ফাংশন
     window.saveBotToken = async function() {
       const token = document.getElementById("botToken").value.trim();
       const statusText = document.getElementById("botStatusText");
@@ -128,7 +128,7 @@
       }
     };
 
-    // স্টক যুক্ত করা
+    // স্টক যোগ করার ফাংশন
     window.saveStock = async function() {
       const cat = document.getElementById("stockCat").value;
       const rawText = document.getElementById("stockData").value.trim();
@@ -153,22 +153,20 @@
 <div class="container">
   <div class="header">
     <h1>⚡ AuraNode Bot Console</h1>
-    <p>Firebase ক্লাউড সিঙ্ক ও অটোমেটেড টেলিগ্রাম শপ</p>
+    <p>Firebase Realtime Sync ও অটোমেটেড শপ</p>
   </div>
 
-  <!-- ১. বট ম্যানেজার -->
   <div class="card">
     <div class="card-title">
       <span>টেলিগ্রাম বট ম্যানেজার</span>
       <span id="botStatusBadge" class="badge badge-off">Offline</span>
     </div>
-    <label>Bot Token (BotFather থেকে পাওয়া):</label>
-    <input type="text" id="botToken" placeholder="123456:ABC-DEF1234ghIkl...">
+    <label>Bot Token:</label>
+    <input type="text" id="botToken" placeholder="BotFather থেকে পাওয়া টোকেন বসান">
     <button onclick="saveBotToken()">টোকেন সেভ ও চালু করুন</button>
     <div id="botStatusText" class="status-text"></div>
   </div>
 
-  <!-- ২. স্টক ইনভেন্টরি -->
   <div class="card">
     <div class="card-title">স্টক ম্যানেজমেন্ট</div>
     <div class="stats-grid">
@@ -189,12 +187,11 @@
     </select>
 
     <label>ডাটা লিস্ট (প্রতি লাইনে একটি করে):</label>
-    <textarea id="stockData" rows="3" placeholder="vpn-key-1&#10;vpn-key-2"></textarea>
+    <textarea id="stockData" rows="3" placeholder="key-sample-1&#10;key-sample-2"></textarea>
     <button onclick="saveStock()">স্টকে সেভ করুন</button>
     <div id="stockStatusText" class="status-text"></div>
   </div>
 
-  <!-- ৩. কাস্টমার ও ডেলিভারি লিস্ট -->
   <div class="card">
     <div class="card-title">👥 সাম্প্রতিক কাস্টমার ও ডেলিভারি লিস্ট</div>
     <div style="overflow-x: auto;">
