@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AuraNode - Customer Management</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --border: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --primary: #2563eb;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+      --shadow-md: 0 4px 20px -2px rgba(15, 23, 42, 0.06);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { background: var(--bg); color: var(--text-main); padding: 32px 16px; display: flex; justify-content: center; min-height: 100vh; }
+    .container { width: 100%; max-width: 720px; display: flex; flex-direction: column; gap: 20px; }
+
+    /* Top Navigation */
+    .nav { display: flex; background: var(--card-bg); padding: 6px; border-radius: 14px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); gap: 6px; }
+    .nav a { flex: 1; text-align: center; text-decoration: none; padding: 10px 12px; font-size: 13px; font-weight: 600; border-radius: 10px; color: var(--text-muted); transition: 0.2s; }
+    .nav a.active { background: var(--primary); color: #fff; box-shadow: 0 2px 8px rgba(37,99,235,0.25); }
+    .nav a:hover:not(.active) { background: #f1f5f9; color: var(--text-main); }
+
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 18px; padding: 24px; box-shadow: var(--shadow-md); }
+    .card-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+
+    /* Stats Overview */
+    .stats-bar { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+    .stat-box { background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; padding: 14px; text-align: center; }
+    .stat-val { font-size: 22px; font-weight: 700; color: var(--primary); margin-top: 2px; }
+    .stat-lbl { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
+
+    /* Customers Table */
+    .table-container { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); background: #ffffff; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
+    th { padding: 12px 14px; color: var(--text-muted); font-weight: 600; background: #f8fafc; border-bottom: 1px solid var(--border); text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+    td { padding: 12px 14px; border-bottom: 1px solid var(--border); color: var(--text-main); font-weight: 500; }
+    tr:last-child td { border-bottom: none; }
+    .balance-badge { background: #ecfdf5; color: #047857; padding: 4px 8px; border-radius: 6px; font-weight: 700; }
+  </style>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+    import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCNhEQkvKdqk3SK-Ot7boIbJl-44b9QJyc",
+      authDomain: "auranode-58027.firebaseapp.com",
+      projectId: "auranode-58027",
+      storageBucket: "auranode-58027.firebasestorage.app",
+      messagingSenderId: "846497828511",
+      appId: "1:846497828511:web:da471062e730cde107dcaa"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    onSnapshot(collection(db, "users"), (snapshot) => {
+      const tbody = document.getElementById("customerTableBody");
+      tbody.innerHTML = "";
+      let totalUsers = snapshot.size;
+      let totalBal = 0;
+
+      if (snapshot.empty) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 20px; color: var(--text-muted);">এখনও কোনো কাস্টমার বটে যুক্ত হয়নি</td></tr>`;
+        document.getElementById("userCount").innerText = 0;
+        document.getElementById("totalBalance").innerText = "0.00 BDT";
+        return;
+      }
+
+      snapshot.forEach((doc) => {
+        const u = doc.data();
+        const bal = parseFloat(u.balance || 0);
+        totalBal += bal;
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><strong>${u.name || 'Anonymous'}</strong></td>
+          <td style="color: var(--primary);">@${u.username || 'None'}</td>
+          <td><span style="font-family: monospace; color: #64748b;">${u.user_id || doc.id}</span></td>
+          <td><span class="balance-badge">${bal.toFixed(2)} BDT</span></td>
+          <td>${u.referrals || 0} জন</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById("userCount").innerText = totalUsers;
+      document.getElementById("totalBalance").innerText = totalBal.toFixed(2) + " BDT";
+    });
+  </script>
+</head>
+<body>
+
+<div class="container">
+  <!-- Top Navigation -->
+  <div class="nav">
+    <a href="index.html">📦 ইনভেন্টরি ও অর্ডার</a>
+    <a href="bot-ui.html">🎨 বটের UI ও বাটন</a>
+    <a href="customers.html" class="active">👥 কাস্টমার লিস্ট</a>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat-box">
+      <div class="stat-lbl">মোট কাস্টমার</div>
+      <div id="userCount" class="stat-val">0</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-lbl">কাস্টমার ব্যালেন্স</div>
+      <div id="totalBalance" class="stat-val">0.00 BDT</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-lbl">সিস্টেম স্ট্যাটাস</div>
+      <div class="stat-val" style="color: #10b981; font-size: 18px;">সক্রিয়</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">👥 রেজিস্টার্ড কাস্টমার তালিকা</div>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>কাস্টমারের নাম</th>
+            <th>ইউজারনেম</th>
+            <th>টেলিগ্রাম আইডি</th>
+            <th>ব্যালেন্স</th>
+            <th>রেফারেল</th>
+          </tr>
+        </thead>
+        <tbody id="customerTableBody">
+          <tr><td colspan="5" style="text-align:center; padding: 20px; color: var(--text-muted);">ডাটা লোড হচ্ছে...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
